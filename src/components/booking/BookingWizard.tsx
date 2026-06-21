@@ -2,9 +2,10 @@
 
 import { useEffect, useMemo, useState, useTransition } from "react";
 import { submitBooking } from "@/app/(site)/rendez-vous/actions";
+import BookingDateCalendar from "@/components/booking/BookingDateCalendar";
 import type { BookingServiceOption } from "@/lib/appointment-data";
 import { salon } from "@/lib/salon";
-import { formatLongDate, formatShortDate, formatTimeDisplay } from "@/lib/schedule";
+import { formatLongDate, formatTimeDisplay } from "@/lib/schedule";
 
 type LocationMode = "at_barber" | "at_home";
 
@@ -18,10 +19,9 @@ function formatPrice(price: number): string {
   return Number.isInteger(price) ? `${price} €` : `${price.toFixed(2)} €`;
 }
 
-function formatDateLabel(dateKey: string, compact = false): string {
+function formatDateLabel(dateKey: string): string {
   const [year, month, day] = dateKey.split("-").map(Number);
-  const date = new Date(year, month - 1, day);
-  return compact ? formatShortDate(date) : formatLongDate(date);
+  return formatLongDate(new Date(year, month - 1, day));
 }
 
 export default function BookingWizard({ services }: BookingWizardProps) {
@@ -263,38 +263,12 @@ export default function BookingWizard({ services }: BookingWizardProps) {
                 Aucune date disponible pour cette prestation. Essayez un autre service.
               </p>
             ) : (
-              <>
-                <div className="mt-3 sm:hidden">
-                  <select
-                    value={date}
-                    onChange={(event) => setDate(event.target.value)}
-                    className="w-full rounded-sm border border-white/10 bg-[var(--color-background)] px-3 py-3 text-sm outline-none focus:border-white/30"
-                  >
-                    <option value="">Choisir une date</option>
-                    {bookableDates.slice(0, 21).map((dateKey) => (
-                      <option key={dateKey} value={dateKey}>
-                        {formatDateLabel(dateKey)}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div className="mt-3 hidden grid-cols-2 gap-2 sm:grid lg:grid-cols-3">
-                  {bookableDates.slice(0, 21).map((dateKey) => (
-                    <button
-                      key={dateKey}
-                      type="button"
-                      onClick={() => setDate(dateKey)}
-                      className={`min-h-11 rounded-sm border px-3 py-2 text-sm ${
-                        date === dateKey
-                          ? "border-[var(--color-foreground)] bg-[var(--color-surface)]"
-                          : "border-white/10 hover:border-white/25"
-                      }`}
-                    >
-                      {formatDateLabel(dateKey, true)}
-                    </button>
-                  ))}
-                </div>
-              </>
+              <BookingDateCalendar
+                key={serviceId}
+                bookableDates={bookableDates}
+                selectedDate={date}
+                onSelect={setDate}
+              />
             )}
           </div>
 
