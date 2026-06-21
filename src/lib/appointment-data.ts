@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { withDbFallback } from "@/lib/db-safe";
 import {
   BOOKING_HORIZON_DAYS,
   filterAvailableSlots,
@@ -52,19 +53,21 @@ export async function getDefaultStaffId(): Promise<string> {
 }
 
 export async function getBookableServices(): Promise<BookingServiceOption[]> {
-  const services = await prisma.service.findMany({
-    where: { active: true },
-    orderBy: [{ category: "asc" }, { name: "asc" }],
-  });
+  return withDbFallback(async () => {
+    const services = await prisma.service.findMany({
+      where: { active: true },
+      orderBy: [{ category: "asc" }, { name: "asc" }],
+    });
 
-  return services.map((service) => ({
-    id: service.id,
-    name: service.name,
-    description: service.description ?? "",
-    durationMinutes: service.durationMinutes,
-    price: Number.parseFloat(service.price.toString()),
-    category: service.category,
-  }));
+    return services.map((service) => ({
+      id: service.id,
+      name: service.name,
+      description: service.description ?? "",
+      durationMinutes: service.durationMinutes,
+      price: Number.parseFloat(service.price.toString()),
+      category: service.category,
+    }));
+  }, []);
 }
 
 async function getBusyPeriods(staffId: string, dayStart: Date, dayEnd: Date): Promise<BusyPeriod[]> {

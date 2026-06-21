@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: jocuts-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: jocuts
+      POSTGRES_PASSWORD: jocuts
+      POSTGRES_DB: jocuts
+    ports:
+      - "5432:5432"
+    volumes:
+      - jocuts_pg_data:/var/lib/postgresql/data
+
+volumes:
+  jocuts_pg_data:

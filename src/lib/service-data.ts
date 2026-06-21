@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { withDbFallback } from "@/lib/db-safe";
 import type { ServiceItem } from "@/lib/salon";
 import { serviceCategories as fallbackCategories } from "@/lib/salon";
 
@@ -55,27 +56,29 @@ export async function getAllServices(): Promise<DbService[]> {
 export async function getActiveServiceCategories(): Promise<
   { name: string; services: ServiceItem[] }[]
 > {
-  const services = await prisma.service.findMany({
-    where: { active: true },
-    orderBy: [{ category: "asc" }, { name: "asc" }],
-  });
+  return withDbFallback(async () => {
+    const services = await prisma.service.findMany({
+      where: { active: true },
+      orderBy: [{ category: "asc" }, { name: "asc" }],
+    });
 
-  if (services.length === 0) {
-    return fallbackCategories;
-  }
+    if (services.length === 0) {
+      return fallbackCategories;
+    }
 
-  const grouped = new Map<string, ServiceItem[]>();
+    const grouped = new Map<string, ServiceItem[]>();
 
-  for (const service of services) {
-    const items = grouped.get(service.category) ?? [];
-    items.push(formatServiceItem(service));
-    grouped.set(service.category, items);
-  }
+    for (const service of services) {
+      const items = grouped.get(service.category) ?? [];
+      items.push(formatServiceItem(service));
+      grouped.set(service.category, items);
+    }
 
-  return Array.from(grouped.entries()).map(([name, categoryServices]) => ({
-    name,
-    services: categoryServices,
-  }));
+    return Array.from(grouped.entries()).map(([name, categoryServices]) => ({
+      name,
+      services: categoryServices,
+    }));
+  }, fallbackCategories);
 }
 
 export async function getFeaturedServices(): Promise<ServiceItem[]> {

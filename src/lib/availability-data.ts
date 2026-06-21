@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { withDbFallback } from "@/lib/db-safe";
 import type { OpeningHour } from "@/lib/salon";
 import { salon } from "@/lib/salon";
 import {
@@ -47,11 +48,13 @@ export async function getWeeklySchedule(staffId: string): Promise<DaySchedule[]>
 }
 
 export async function getPublicOpeningHours(): Promise<OpeningHour[]> {
-  const staff = await prisma.staff.findFirst({ orderBy: { createdAt: "asc" } });
-  if (!staff) return [...salon.openingHours];
+  return withDbFallback(async () => {
+    const staff = await prisma.staff.findFirst({ orderBy: { createdAt: "asc" } });
+    if (!staff) return [...salon.openingHours];
 
-  const schedules = await getWeeklySchedule(staff.id);
-  return schedulesToOpeningHours(schedules);
+    const schedules = await getWeeklySchedule(staff.id);
+    return schedulesToOpeningHours(schedules);
+  }, [...salon.openingHours]);
 }
 
 export async function getBlockedSlotsForRange(

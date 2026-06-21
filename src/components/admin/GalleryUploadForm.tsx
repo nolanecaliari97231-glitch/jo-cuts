@@ -26,7 +26,7 @@ export default function GalleryUploadForm() {
     >
       <h2 className="font-serif text-xl">Ajouter une photo</h2>
       <p className="mt-2 text-sm text-[var(--color-muted)]">
-        JPG, PNG ou WebP — maximum 5 Mo. Format carré recommandé.
+        JPG, PNG ou WebP — maximum 5 Mo. En production, les fichiers sont stockés sur Vercel Blob.
       </p>
 
       {error && (

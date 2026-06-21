@@ -10,6 +10,8 @@ export const metadata: Metadata = {
   title: "Demande envoyée",
 };
 
+export const dynamic = "force-dynamic";
+
 export default async function BookingConfirmationPage({
   searchParams,
 }: {

@@ -6,74 +6,37 @@ Site vitrine + prise de rendez-vous + back-office barbier pour **JO'Cuts**, barb
 
 - **Next.js 16** (App Router, TypeScript)
 - **Tailwind CSS 4**
-- **Prisma 7** + SQLite (local) → PostgreSQL en production (Neon, Supabase…)
+- **Prisma 7** + **PostgreSQL** (Neon en prod, Docker en local)
+- **Vercel** + **Vercel Blob** (hébergement + photos galerie)
 - Specs complètes : [`JOCuts-specs.md`](./JOCuts-specs.md)
+- Déploiement détaillé : [`DEPLOY.md`](./DEPLOY.md)
 
 ## Démarrage local
 
 ```bash
 git clone https://github.com/nolanecaliari97231-glitch/jo-cuts.git
 cd jo-cuts
+docker compose up -d
 npm install
 cp .env.example .env
-npm run db:migrate
+npm run db:migrate:deploy
 npm run db:seed
 npm run dev
 ```
 
 - Site : [http://localhost:3000](http://localhost:3000)
 - Admin : [http://localhost:3000/admin/login](http://localhost:3000/admin/login)
-- Compte barbier par défaut : voir `STAFF_EMAIL` / `STAFF_PASSWORD` dans `.env`
 
 ## Variables d'environnement
 
 | Variable | Description |
 |---|---|
-| `DATABASE_URL` | SQLite local : `file:./dev.db` |
+| `DATABASE_URL` | PostgreSQL (`postgresql://jocuts:jocuts@localhost:5432/jocuts` en local) |
 | `AUTH_SECRET` | Clé secrète JWT (longue chaîne aléatoire) |
-| `STAFF_EMAIL` | Email de connexion admin |
-| `STAFF_PASSWORD` | Mot de passe initial (seed) |
-| `RESEND_API_KEY` | (Optionnel) Envoi d'emails via [Resend](https://resend.com) |
-| `EMAIL_FROM` | Expéditeur des emails |
-| `NEXT_PUBLIC_SITE_URL` | URL publique du site (ex. `https://jocuts.vercel.app`) |
-
-Sans `RESEND_API_KEY`, les emails sont loggés dans la console en développement.
-
-## Structure
-
-```
-src/
-├── app/              # Pages publiques + admin + API
-├── components/       # UI partagée
-└── lib/              # Prisma, auth, métier
-prisma/
-├── schema.prisma
-└── migrations/
-public/
-├── images/gallery/   # Photos seed
-└── uploads/gallery/  # Uploads admin (gitignored)
-```
-
-## Fonctionnalités
-
-- Site public : accueil, services, galerie, contact, prise de RDV
-- Back-office : services, calendrier, disponibilités, validation RDV, CRM clients, galerie
-- Notifications email (Resend) : nouvelle demande, confirmation, refus
-
-## Déploiement (Vercel)
-
-1. Pousser le repo sur GitHub : [nolanecaliari97231-glitch/jo-cuts](https://github.com/nolanecaliari97231-glitch/jo-cuts)
-2. Importer le projet sur [Vercel](https://vercel.com) depuis GitHub
-3. Configurer les variables d'environnement (voir ci-dessus)
-4. **Base de données** : SQLite ne persiste pas sur Vercel. Pour la production, migrer vers **PostgreSQL** (Neon ou Supabase) et adapter `DATABASE_URL` + le client Prisma.
-5. Après le premier déploiement, exécuter les migrations et le seed sur la base de prod :
-   ```bash
-   npx prisma migrate deploy
-   npm run db:seed
-   ```
-6. Les uploads galerie (`public/uploads/`) ne persistent pas non plus sur Vercel — prévoir un stockage objet (S3, Cloudinary, Supabase Storage) en production.
-
-Build Vercel : `npm run build` (inclut `prisma generate`).
+| `STAFF_EMAIL` / `STAFF_PASSWORD` | Compte admin (seed) |
+| `NEXT_PUBLIC_SITE_URL` | URL publique du site |
+| `BLOB_READ_WRITE_TOKEN` | Vercel Blob (prod — uploads galerie) |
+| `RESEND_API_KEY` / `EMAIL_FROM` | Emails (optionnel en dev) |
 
 ## Scripts
 
@@ -81,24 +44,32 @@ Build Vercel : `npm run build` (inclut `prisma generate`).
 |---|---|
 | `npm run dev` | Serveur de développement |
 | `npm run build` | Build production |
+| `npm run db:local` | Démarrer PostgreSQL Docker |
+| `npm run db:migrate:deploy` | Appliquer les migrations |
+| `npm run db:seed` | Données initiales |
 | `npm run lint` | ESLint |
-| `npm run db:migrate` | Migrations Prisma (dev) |
-| `npm run db:seed` | Données initiales (staff, services, galerie) |
 
-## Roadmap (specs §6)
+## Déploiement production
 
-1. ~~Setup projet~~
-2. ~~Modèle de données Prisma~~
-3. ~~Front public~~
-4. ~~Auth back-office~~
-5. ~~CRUD services~~
-6. ~~Calendrier + disponibilités~~
-7. ~~Parcours prise de RDV~~
-8. ~~Validation demandes + notifications~~
-9. ~~Dashboard + CRM léger~~
-10. ~~Galerie dynamique~~
-11. ~~Tests + déploiement (doc & push GitHub)~~
-12. Phase 2 : SumUp, espace client, PostgreSQL prod, stockage photos cloud
+Voir **[DEPLOY.md](./DEPLOY.md)** pour Neon + Vercel + Blob + seed.
+
+Résumé :
+1. Créer base **Neon** (URL pooler)
+2. Créer store **Vercel Blob**
+3. Importer repo sur **Vercel** avec les variables d'env
+4. Lancer `npm run db:seed` une fois contre la base Neon
+
+## Fonctionnalités
+
+- Site public : accueil, services, galerie, contact, prise de RDV
+- Back-office : services, calendrier, disponibilités, validation RDV, CRM, galerie
+- Notifications email (Resend)
+
+## Roadmap
+
+- ~~Setup → Galerie dynamique~~
+- ~~PostgreSQL + Vercel~~
+- Phase 2 : SumUp, espace client
 
 ## Identité visuelle
 

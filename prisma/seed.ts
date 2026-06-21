@@ -1,15 +1,11 @@
 import "dotenv/config";
-import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
-import { PrismaClient } from "../generated/prisma/client";
 import { hashPassword } from "../src/lib/auth";
 import { syncDefaultAvailability } from "../src/lib/availability-data";
+import { createPrismaClient } from "../src/lib/db";
 import { syncDefaultGalleryImages } from "../src/lib/gallery-data";
 import { serviceCategories } from "../src/lib/salon";
 
-const adapter = new PrismaBetterSqlite3({
-  url: process.env.DATABASE_URL ?? "file:./dev.db",
-});
-const prisma = new PrismaClient({ adapter });
+const prisma = createPrismaClient();
 
 function parseDurationMinutes(duration: string): number {
   const matches = duration.match(/\d+/g);

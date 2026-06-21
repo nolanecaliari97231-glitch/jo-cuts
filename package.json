@@ -10,16 +10,19 @@
     "postinstall": "prisma generate",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
+    "db:migrate:deploy": "prisma migrate deploy",
     "db:seed": "tsx prisma/seed.ts",
-    "db:studio": "prisma studio"
+    "db:studio": "prisma studio",
+    "db:local": "docker compose up -d"
   },
   "dependencies": {
-    "@prisma/adapter-better-sqlite3": "^7.8.0",
+    "@prisma/adapter-pg": "^7.8.0",
+    "@vercel/blob": "^2.3.1",
     "bcryptjs": "^3.0.3",
-    "better-sqlite3": "^12.11.1",
     "dotenv": "^17.4.2",
     "jose": "^6.2.3",
     "next": "^16.2.9",
+    "pg": "^8.20.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7"
   },
@@ -27,8 +30,8 @@
     "@prisma/client": "^7.8.0",
     "@tailwindcss/postcss": "^4.3.1",
     "@types/bcryptjs": "^2.4.6",
-    "@types/better-sqlite3": "^7.6.13",
     "@types/node": "^26.0.0",
+    "@types/pg": "^8.18.0",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "eslint": "^9.39.4",

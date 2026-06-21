@@ -1,7 +1,9 @@
+import { del, put } from "@vercel/blob";
 import { mkdir, unlink, writeFile } from "fs/promises";
 import path from "path";
 import { randomUUID } from "crypto";
 import { prisma } from "@/lib/prisma";
+import { withDbFallback } from "@/lib/db-safe";
 import type { GalleryImage } from "@/lib/salon";
 import { galleryImages as fallbackGalleryImages } from "@/lib/salon";
 
@@ -13,6 +15,14 @@ const ALLOWED_MIME_TYPES = new Map([
   ["image/png", "png"],
   ["image/webp", "webp"],
 ]);
+
+function isBlobStorageEnabled(): boolean {
+  return Boolean(process.env.BLOB_READ_WRITE_TOKEN);
+}
+
+function isBlobUrl(url: string): boolean {
+  return url.startsWith("https://") && url.includes("blob.vercel-storage.com");
+}
 
 export type DbGalleryImage = {
   id: string;
@@ -35,18 +45,20 @@ export function toPublicGalleryImage(image: DbGalleryImage): GalleryImage & { id
 }
 
 export async function getPublicGalleryImages(): Promise<(GalleryImage & { id: string })[]> {
-  const images = await prisma.galleryImage.findMany({
-    orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
-  });
+  return withDbFallback(async () => {
+    const images = await prisma.galleryImage.findMany({
+      orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
+    });
 
-  if (images.length === 0) {
-    return fallbackGalleryImages.map((image, index) => ({
-      ...image,
-      id: `fallback-${index}`,
-    }));
-  }
+    if (images.length === 0) {
+      return fallbackGalleryImages.map((image, index) => ({
+        ...image,
+        id: `fallback-${index}`,
+      }));
+    }
 
-  return images.map((image) => toPublicGalleryImage(image));
+    return images.map((image) => toPublicGalleryImage(image));
+  }, fallbackGalleryImages.map((image, index) => ({ ...image, id: `fallback-${index}` })));
 }
 
 export async function getAllGalleryImages(): Promise<DbGalleryImage[]> {
@@ -77,9 +89,17 @@ export async function saveGalleryUpload(file: File): Promise<string> {
     throw new Error("Fichier trop volumineux (maximum 5 Mo).");
   }
 
-  await mkdir(UPLOAD_DIR, { recursive: true });
-
   const filename = `${randomUUID()}.${extension}`;
+
+  if (isBlobStorageEnabled()) {
+    const blob = await put(`gallery/${filename}`, file, {
+      access: "public",
+      token: process.env.BLOB_READ_WRITE_TOKEN,
+    });
+    return blob.url;
+  }
+
+  await mkdir(UPLOAD_DIR, { recursive: true });
   const filepath = path.join(UPLOAD_DIR, filename);
   const bytes = await file.arrayBuffer();
   await writeFile(filepath, Buffer.from(bytes));
@@ -88,6 +108,11 @@ export async function saveGalleryUpload(file: File): Promise<string> {
 }
 
 export async function deleteGalleryFile(url: string) {
+  if (isBlobUrl(url)) {
+    await del(url, { token: process.env.BLOB_READ_WRITE_TOKEN });
+    return;
+  }
+
   if (!url.startsWith("/uploads/gallery/")) return;
 
   const filepath = path.join(process.cwd(), "public", url);
