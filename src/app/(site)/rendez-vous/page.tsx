@@ -20,7 +20,7 @@ export default async function RendezVousPage() {
         description="Choisissez votre prestation, un créneau disponible et envoyez votre demande. Le barbier validera votre rendez-vous."
       />
 
-      <div className="mx-auto max-w-4xl px-6 py-16">
+      <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6 sm:py-16">
         <p className="mb-8 text-sm text-[var(--color-muted)]">{salon.appointmentTimingNote}</p>
         <BookingWizard services={services} />
       </div>

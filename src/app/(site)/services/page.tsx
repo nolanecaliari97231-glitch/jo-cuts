@@ -18,7 +18,7 @@ export default async function ServicesPage() {
         description="Prestations chez le barbier ou à domicile en Martinique. Supplément déplacement fixé selon votre commune."
       />
 
-      <div className="mx-auto max-w-6xl px-6 py-16">
+      <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16">
         <div className="mb-14 space-y-4 rounded-sm border border-white/10 bg-[var(--color-surface)] p-6 text-sm text-[var(--color-muted)]">
           <p>{salon.serviceScope}</p>
           <p>{salon.appointmentTimingNote}</p>

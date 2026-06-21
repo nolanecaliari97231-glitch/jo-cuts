@@ -13,10 +13,10 @@ export default function OpeningHours({ hours, compact = false, note }: OpeningHo
         {hours.map(({ day, hours: time, closed }) => (
           <div
             key={day}
-            className={`flex items-center justify-between gap-4 ${compact ? "text-sm" : ""}`}
+            className={`flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between sm:gap-4 ${compact ? "text-sm" : ""}`}
           >
             <dt className="text-[var(--color-foreground)]">{day}</dt>
-            <dd className={closed ? "text-[var(--color-muted)]" : "text-[var(--color-muted)]"}>
+            <dd className={`${closed ? "text-[var(--color-muted)]" : "text-[var(--color-muted)]"} sm:text-right`}>
               {time}
             </dd>
           </div>

@@ -11,20 +11,30 @@ function NavLink({
   label,
   isActive,
   onClick,
+  mobile = false,
 }: {
   href: string;
   label: string;
   isActive: boolean;
   onClick?: () => void;
+  mobile?: boolean;
 }) {
   return (
     <Link
       href={href}
       onClick={onClick}
-      className={`text-sm font-medium transition-colors ${
-        isActive
-          ? "text-[var(--color-foreground)] underline decoration-[var(--color-accent)] decoration-2 underline-offset-8"
-          : "text-[var(--color-muted)] hover:text-[var(--color-foreground)]"
+      className={`font-medium transition-colors ${
+        mobile
+          ? `block py-3.5 text-base ${
+              isActive
+                ? "text-[var(--color-foreground)]"
+                : "text-[var(--color-muted)] hover:text-[var(--color-foreground)]"
+            }`
+          : `text-sm ${
+              isActive
+                ? "text-[var(--color-foreground)] underline decoration-[var(--color-accent)] decoration-2 underline-offset-8"
+                : "text-[var(--color-muted)] hover:text-[var(--color-foreground)]"
+            }`
       }`}
     >
       {label}
@@ -48,9 +58,9 @@ export default function Header() {
   }, [menuOpen]);
 
   return (
-    <header className="relative border-b border-white/10 bg-[var(--color-surface)]">
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-5">
-        <Link href="/" className="group transition-opacity hover:opacity-90">
+    <header className="sticky top-0 z-30 border-b border-white/10 bg-[var(--color-surface)]">
+      <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 sm:px-6 sm:py-5">
+        <Link href="/" className="group min-w-0 transition-opacity hover:opacity-90">
           <Logo variant="header" />
         </Link>
 
@@ -62,7 +72,7 @@ export default function Header() {
 
         <button
           type="button"
-          className="inline-flex h-10 w-10 items-center justify-center rounded-sm border border-white/10 md:hidden"
+          className="inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-sm border border-white/10 md:hidden"
           aria-expanded={menuOpen}
           aria-controls="mobile-nav"
           aria-label={menuOpen ? "Fermer le menu" : "Ouvrir le menu"}
@@ -91,23 +101,32 @@ export default function Header() {
       </div>
 
       {menuOpen && (
-        <nav
-          id="mobile-nav"
-          className="border-t border-white/10 bg-[var(--color-surface)] px-6 py-6 md:hidden"
-          aria-label="Navigation mobile"
-        >
-          <div className="flex flex-col gap-5">
-            {navLinks.map(({ href, label }) => (
-              <NavLink
-                key={href}
-                href={href}
-                label={label}
-                isActive={pathname === href}
-                onClick={() => setMenuOpen(false)}
-              />
-            ))}
-          </div>
-        </nav>
+        <>
+          <button
+            type="button"
+            className="fixed inset-0 z-40 bg-black/60 md:hidden"
+            aria-label="Fermer le menu"
+            onClick={() => setMenuOpen(false)}
+          />
+          <nav
+            id="mobile-nav"
+            className="fixed inset-x-0 top-[65px] z-50 max-h-[calc(100dvh-65px)] overflow-y-auto border-b border-white/10 bg-[var(--color-surface)] px-4 py-2 md:hidden"
+            aria-label="Navigation mobile"
+          >
+            <div className="flex flex-col divide-y divide-white/5">
+              {navLinks.map(({ href, label }) => (
+                <NavLink
+                  key={href}
+                  href={href}
+                  label={label}
+                  isActive={pathname === href}
+                  onClick={() => setMenuOpen(false)}
+                  mobile
+                />
+              ))}
+            </div>
+          </nav>
+        </>
       )}
     </header>
   );

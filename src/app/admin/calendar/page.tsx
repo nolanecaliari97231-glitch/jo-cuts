@@ -18,7 +18,7 @@ export const metadata: Metadata = {
 
 function parseView(value: string | undefined): CalendarView {
   if (value === "day" || value === "week" || value === "month") return value;
-  return "week";
+  return "day";
 }
 
 export default async function AdminCalendarPage({

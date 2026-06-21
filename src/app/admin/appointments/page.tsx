@@ -64,12 +64,12 @@ export default async function AdminAppointmentsPage({
         </div>
       )}
 
-      <div className="mb-8 flex flex-wrap gap-2">
+      <div className="mb-8 flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {FILTERS.map((filter) => (
           <Link
             key={filter.id}
             href={`/admin/appointments?status=${filter.id}`}
-            className={`rounded-sm px-3 py-1.5 text-sm ${
+            className={`shrink-0 rounded-sm px-4 py-2.5 text-sm ${
               status === filter.id
                 ? "bg-[var(--color-foreground)] text-[var(--color-background)]"
                 : "border border-white/20 hover:border-white/40"

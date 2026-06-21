@@ -39,7 +39,7 @@ export default async function BookingConfirmationPage({
         description="Votre demande de rendez-vous a bien été transmise au barbier."
       />
 
-      <div className="mx-auto max-w-2xl px-6 py-16">
+      <div className="mx-auto max-w-2xl px-4 py-12 sm:px-6 sm:py-16">
         <div className="rounded-sm border border-emerald-500/30 bg-emerald-500/10 p-6">
           <p className="font-medium text-emerald-100">En attente de validation</p>
           <p className="mt-2 text-sm text-emerald-50/80">
@@ -53,31 +53,31 @@ export default async function BookingConfirmationPage({
         </div>
 
         <dl className="mt-8 space-y-4 rounded-sm border border-white/10 bg-[var(--color-surface)] p-6 text-sm">
-          <div className="flex justify-between gap-4">
+          <div className="flex flex-col gap-1 sm:flex-row sm:justify-between sm:gap-4">
             <dt className="text-[var(--color-muted)]">Prestation</dt>
-            <dd className="text-right font-medium">{appointment.service.name}</dd>
+            <dd className="font-medium sm:text-right">{appointment.service.name}</dd>
           </div>
-          <div className="flex justify-between gap-4">
+          <div className="flex flex-col gap-1 sm:flex-row sm:justify-between sm:gap-4">
             <dt className="text-[var(--color-muted)]">Date</dt>
-            <dd className="text-right">{formatLongDate(appointment.startTime)}</dd>
+            <dd className="sm:text-right">{formatLongDate(appointment.startTime)}</dd>
           </div>
-          <div className="flex justify-between gap-4">
+          <div className="flex flex-col gap-1 sm:flex-row sm:justify-between sm:gap-4">
             <dt className="text-[var(--color-muted)]">Heure</dt>
-            <dd className="text-right">
+            <dd className="sm:text-right">
               {formatTime(appointment.startTime)} – {formatTime(appointment.endTime)}
             </dd>
           </div>
-          <div className="flex justify-between gap-4">
+          <div className="flex flex-col gap-1 sm:flex-row sm:justify-between sm:gap-4">
             <dt className="text-[var(--color-muted)]">Lieu</dt>
-            <dd className="text-right">{locationLabel}</dd>
+            <dd className="sm:text-right">{locationLabel}</dd>
           </div>
-          <div className="flex justify-between gap-4">
+          <div className="flex flex-col gap-1 sm:flex-row sm:justify-between sm:gap-4">
             <dt className="text-[var(--color-muted)]">Paiement prévu</dt>
-            <dd className="text-right">{paymentLabel}</dd>
+            <dd className="sm:text-right">{paymentLabel}</dd>
           </div>
-          <div className="flex justify-between gap-4">
+          <div className="flex flex-col gap-1 sm:flex-row sm:justify-between sm:gap-4">
             <dt className="text-[var(--color-muted)]">Contact</dt>
-            <dd className="text-right">
+            <dd className="sm:text-right">
               {appointment.client.name}
               <br />
               {appointment.client.phone}

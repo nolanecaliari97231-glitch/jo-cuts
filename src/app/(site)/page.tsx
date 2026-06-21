@@ -21,7 +21,7 @@ export default async function HomePage() {
   return (
     <>
       <section className="relative overflow-hidden border-b border-white/10">
-        <div className="mx-auto grid max-w-6xl items-center gap-12 px-6 py-16 md:grid-cols-2 md:py-24">
+        <div className="mx-auto grid max-w-6xl items-center gap-12 px-4 py-12 sm:px-6 sm:py-16 md:grid-cols-2 md:py-24">
           <div className="text-center md:text-left">
             <Logo variant="hero" className="md:items-start md:text-left" />
             <p className="mt-8 max-w-xl text-lg text-[var(--color-muted)] md:mx-0 mx-auto">
@@ -49,17 +49,17 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-6xl px-6 py-20">
-        <div className="mb-12 flex items-end justify-between gap-6">
+      <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-20">
+        <div className="mb-10 flex flex-col gap-4 sm:mb-12 sm:flex-row sm:items-end sm:justify-between sm:gap-6">
           <div>
-            <h2 className="font-serif text-3xl">Nos services</h2>
+            <h2 className="font-serif text-2xl sm:text-3xl">Nos services</h2>
             <p className="mt-2 text-[var(--color-muted)]">
               Chez le barbier ou à domicile — tarifs indicatifs, supplément déplacement sur devis.
             </p>
           </div>
           <Link
             href="/services"
-            className="hidden shrink-0 text-sm text-[var(--color-muted)] underline underline-offset-4 hover:text-[var(--color-foreground)] md:inline"
+            className="inline-flex min-h-11 shrink-0 items-center text-sm text-[var(--color-muted)] underline underline-offset-4 hover:text-[var(--color-foreground)] sm:min-h-0"
           >
             Voir tout
           </Link>
@@ -73,9 +73,9 @@ export default async function HomePage() {
       </section>
 
       <section className="border-y border-white/10 bg-[var(--color-surface)]">
-        <div className="mx-auto max-w-6xl px-6 py-20">
-          <div className="mb-10">
-            <h2 className="font-serif text-3xl">Galerie</h2>
+        <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-20">
+          <div className="mb-8 sm:mb-10">
+            <h2 className="font-serif text-2xl sm:text-3xl">Galerie</h2>
             <p className="mt-2 text-[var(--color-muted)]">
               Quelques réalisations — dégradés, line-ups, barbes et styles sur mesure.
             </p>
@@ -84,10 +84,10 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-6xl px-6 py-20">
+      <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-20">
         <div className="grid gap-10 lg:grid-cols-2">
           <div>
-            <h2 className="font-serif text-3xl">Comment réserver</h2>
+            <h2 className="font-serif text-2xl sm:text-3xl">Comment réserver</h2>
             <p className="mt-4 text-[var(--color-muted)]">
               Deux options : venir chez le barbier ou être coiffé à domicile en Martinique.
             </p>
@@ -96,7 +96,7 @@ export default async function HomePage() {
             </div>
           </div>
           <div>
-            <h2 className="font-serif text-3xl">Paiement</h2>
+            <h2 className="font-serif text-2xl sm:text-3xl">Paiement</h2>
             <p className="mt-4 text-[var(--color-muted)]">
               Règlement sur place le jour du rendez-vous — espèces ou carte via le terminal SumUp du
               barbier.
@@ -109,10 +109,10 @@ export default async function HomePage() {
       </section>
 
       <section className="border-t border-white/10 bg-[var(--color-surface)]">
-        <div className="mx-auto max-w-6xl px-6 py-20">
+        <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-20">
           <div className="grid gap-10 md:grid-cols-2">
             <div>
-              <h2 className="font-serif text-3xl">Horaires</h2>
+              <h2 className="font-serif text-2xl sm:text-3xl">Horaires</h2>
               <p className="mt-4 text-[var(--color-muted)]">
                 Horaires indicatifs — {salon.region}. Contact : {salon.phone}
               </p>

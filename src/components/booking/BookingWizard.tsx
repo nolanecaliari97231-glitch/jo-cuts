@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState, useTransition } from "react";
 import { submitBooking } from "@/app/(site)/rendez-vous/actions";
 import type { BookingServiceOption } from "@/lib/appointment-data";
 import { salon } from "@/lib/salon";
-import { formatLongDate, formatTimeDisplay } from "@/lib/schedule";
+import { formatLongDate, formatShortDate, formatTimeDisplay } from "@/lib/schedule";
 
 type LocationMode = "at_barber" | "at_home";
 
@@ -18,9 +18,10 @@ function formatPrice(price: number): string {
   return Number.isInteger(price) ? `${price} €` : `${price.toFixed(2)} €`;
 }
 
-function formatDateLabel(dateKey: string): string {
+function formatDateLabel(dateKey: string, compact = false): string {
   const [year, month, day] = dateKey.split("-").map(Number);
-  return formatLongDate(new Date(year, month - 1, day));
+  const date = new Date(year, month - 1, day);
+  return compact ? formatShortDate(date) : formatLongDate(date);
 }
 
 export default function BookingWizard({ services }: BookingWizardProps) {
@@ -151,11 +152,11 @@ export default function BookingWizard({ services }: BookingWizardProps) {
 
   return (
     <div className="space-y-8">
-      <ol className="flex flex-wrap gap-2">
+      <ol className="flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {STEPS.map((label, index) => (
           <li
             key={label}
-            className={`rounded-sm px-3 py-1.5 text-xs uppercase tracking-wider ${
+            className={`shrink-0 rounded-sm px-3 py-2 text-xs uppercase tracking-wider sm:py-1.5 ${
               index === step
                 ? "bg-[var(--color-foreground)] text-[var(--color-background)]"
                 : index < step
@@ -183,7 +184,7 @@ export default function BookingWizard({ services }: BookingWizardProps) {
                 key={service.id}
                 type="button"
                 onClick={() => setServiceId(service.id)}
-                className={`rounded-sm border p-5 text-left transition-colors ${
+                className={`rounded-sm border p-5 text-left transition-colors min-h-[44px] ${
                   serviceId === service.id
                     ? "border-[var(--color-foreground)] bg-[var(--color-surface)]"
                     : "border-white/10 bg-[var(--color-surface)] hover:border-white/25"
@@ -227,7 +228,7 @@ export default function BookingWizard({ services }: BookingWizardProps) {
                 key={mode.id}
                 type="button"
                 onClick={() => setLocationMode(mode.id)}
-                className={`rounded-sm border p-5 text-left transition-colors ${
+                className={`rounded-sm border p-5 text-left transition-colors min-h-[44px] ${
                   locationMode === mode.id
                     ? "border-[var(--color-foreground)] bg-[var(--color-surface)]"
                     : "border-white/10 bg-[var(--color-surface)] hover:border-white/25"
@@ -262,22 +263,38 @@ export default function BookingWizard({ services }: BookingWizardProps) {
                 Aucune date disponible pour cette prestation. Essayez un autre service.
               </p>
             ) : (
-              <div className="mt-3 flex flex-wrap gap-2">
-                {bookableDates.slice(0, 21).map((dateKey) => (
-                  <button
-                    key={dateKey}
-                    type="button"
-                    onClick={() => setDate(dateKey)}
-                    className={`rounded-sm border px-3 py-2 text-sm ${
-                      date === dateKey
-                        ? "border-[var(--color-foreground)] bg-[var(--color-surface)]"
-                        : "border-white/10 hover:border-white/25"
-                    }`}
+              <>
+                <div className="mt-3 sm:hidden">
+                  <select
+                    value={date}
+                    onChange={(event) => setDate(event.target.value)}
+                    className="w-full rounded-sm border border-white/10 bg-[var(--color-background)] px-3 py-3 text-sm outline-none focus:border-white/30"
                   >
-                    {formatDateLabel(dateKey)}
-                  </button>
-                ))}
-              </div>
+                    <option value="">Choisir une date</option>
+                    {bookableDates.slice(0, 21).map((dateKey) => (
+                      <option key={dateKey} value={dateKey}>
+                        {formatDateLabel(dateKey)}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="mt-3 hidden grid-cols-2 gap-2 sm:grid lg:grid-cols-3">
+                  {bookableDates.slice(0, 21).map((dateKey) => (
+                    <button
+                      key={dateKey}
+                      type="button"
+                      onClick={() => setDate(dateKey)}
+                      className={`min-h-11 rounded-sm border px-3 py-2 text-sm ${
+                        date === dateKey
+                          ? "border-[var(--color-foreground)] bg-[var(--color-surface)]"
+                          : "border-white/10 hover:border-white/25"
+                      }`}
+                    >
+                      {formatDateLabel(dateKey, true)}
+                    </button>
+                  ))}
+                </div>
+              </>
             )}
           </div>
 
@@ -293,13 +310,13 @@ export default function BookingWizard({ services }: BookingWizardProps) {
                   Aucun créneau disponible ce jour-là.
                 </p>
               ) : (
-                <div className="mt-3 flex flex-wrap gap-2">
+                <div className="mt-3 grid grid-cols-3 gap-2 sm:flex sm:flex-wrap">
                   {slots.map((slot) => (
                     <button
                       key={slot}
                       type="button"
                       onClick={() => setTime(slot)}
-                      className={`rounded-sm border px-3 py-2 text-sm ${
+                      className={`min-h-11 rounded-sm border px-3 py-2 text-sm ${
                         time === slot
                           ? "border-[var(--color-foreground)] bg-[var(--color-surface)]"
                           : "border-white/10 hover:border-white/25"
@@ -440,7 +457,7 @@ export default function BookingWizard({ services }: BookingWizardProps) {
 }
 
 const inputClassName =
-  "mt-1 w-full rounded-sm border border-white/10 bg-[var(--color-background)] px-3 py-2 text-sm outline-none focus:border-white/30";
+  "mt-1 w-full rounded-sm border border-white/10 bg-[var(--color-background)] px-3 py-3 text-base outline-none focus:border-white/30 sm:py-2 sm:text-sm";
 
 function Field({
   label,
@@ -478,12 +495,12 @@ function WizardNav({
   pending?: boolean;
 }) {
   return (
-    <div className="flex flex-wrap gap-3 pt-2">
+    <div className="sticky bottom-0 -mx-4 flex flex-col gap-3 border-t border-white/10 bg-[var(--color-background)]/95 px-4 py-4 backdrop-blur sm:static sm:mx-0 sm:flex-row sm:border-0 sm:bg-transparent sm:p-0 sm:pt-2">
       {onBack && (
         <button
           type="button"
           onClick={onBack}
-          className="rounded-sm border border-white/20 px-5 py-2.5 text-sm transition-colors hover:border-white/40"
+          className="min-h-11 w-full rounded-sm border border-white/20 px-5 py-2.5 text-sm transition-colors hover:border-white/40 sm:w-auto"
         >
           Retour
         </button>
@@ -492,7 +509,7 @@ function WizardNav({
         type="button"
         onClick={onContinue}
         disabled={!canContinue || pending}
-        className="inline-flex items-center rounded-sm bg-[var(--color-foreground)] px-5 py-2.5 text-sm font-semibold uppercase tracking-wider text-[var(--color-background)] transition-opacity hover:opacity-90 disabled:opacity-50"
+        className="inline-flex min-h-11 w-full items-center justify-center rounded-sm bg-[var(--color-foreground)] px-5 py-2.5 text-sm font-semibold uppercase tracking-wider text-[var(--color-background)] transition-opacity hover:opacity-90 disabled:opacity-50 sm:w-auto"
       >
         {continueLabel}
       </button>

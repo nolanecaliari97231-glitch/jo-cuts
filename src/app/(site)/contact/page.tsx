@@ -15,7 +15,7 @@ export default function ContactPage() {
         description="Une question sur une prestation, un déplacement à domicile ou un rendez-vous ? Contactez JO'Cuts directement."
       />
 
-      <div className="mx-auto max-w-6xl px-6 py-16">
+      <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16">
         <div className="grid gap-12 lg:grid-cols-2">
           <SalonInfo />
           <ContactForm />

@@ -37,7 +37,7 @@ function MartiniqueLine({ className }: { className?: string }) {
   return (
     <div className={`flex items-center gap-2 ${className ?? ""}`}>
       <span className="h-px w-3 bg-[var(--color-foreground)]/70" aria-hidden="true" />
-      <span className="font-sans text-[7px] font-medium uppercase tracking-[0.45em] text-[var(--color-foreground)]">
+      <span className="font-sans text-[9px] font-medium uppercase tracking-[0.35em] text-[var(--color-foreground)] sm:text-[10px] sm:tracking-[0.45em]">
         Martinique
       </span>
       <span className="h-px w-3 bg-[var(--color-foreground)]/70" aria-hidden="true" />
@@ -51,7 +51,7 @@ export default function Logo({ variant = "header", className }: LogoProps) {
       <div className={`flex flex-col items-center text-center ${className ?? ""}`}>
         <ScissorsIcon className="mb-6 h-20 w-20 text-[var(--color-foreground)] md:mb-8 md:h-24 md:w-24" />
         <h1>
-          <BrandName className="text-5xl md:text-7xl" />
+          <BrandName className="text-4xl sm:text-5xl md:text-7xl" />
         </h1>
         <BarbershopLine className="mt-3 block text-xs md:text-sm" />
       </div>
@@ -90,8 +90,8 @@ export default function Logo({ variant = "header", className }: LogoProps) {
       <ScissorsIcon className="h-9 w-9 shrink-0 text-[var(--color-foreground)]" />
       <div className="flex flex-col leading-none">
         <BrandName className="text-xl" />
-        <BarbershopLine className="mt-1 block text-[10px]" />
-        <MartiniqueLine className="mt-1.5" />
+        <BarbershopLine className="mt-1 hidden text-[10px] sm:mt-1.5 sm:block" />
+        <MartiniqueLine className="mt-1 hidden sm:mt-1.5 sm:flex" />
       </div>
     </div>
   );

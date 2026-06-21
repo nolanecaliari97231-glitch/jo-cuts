@@ -17,7 +17,7 @@ export default async function GaleriePage() {
         description="Réalisations JO'Cuts — dégradés, line-ups, barbes, coupes enfant et designs sur mesure."
       />
 
-      <div className="mx-auto max-w-6xl px-6 py-16">
+      <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16">
         <GalleryGrid images={images} />
       </div>
     </>

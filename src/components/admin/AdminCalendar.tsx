@@ -84,40 +84,60 @@ function CalendarNav({ view, date }: { view: CalendarView; date: Date }) {
       <div className="flex items-center gap-2">
         <Link
           href={buildCalendarUrl(view, prevDate)}
-          className="rounded-sm border border-white/20 px-3 py-1.5 text-sm hover:border-white/40"
+          className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-sm border border-white/20 text-sm hover:border-white/40"
         >
           ←
         </Link>
         <Link
           href={buildCalendarUrl(view, nextDate)}
-          className="rounded-sm border border-white/20 px-3 py-1.5 text-sm hover:border-white/40"
+          className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-sm border border-white/20 text-sm hover:border-white/40"
         >
           →
         </Link>
         <Link
           href={buildCalendarUrl(view, new Date())}
-          className="rounded-sm border border-white/20 px-3 py-1.5 text-sm hover:border-white/40"
+          className="inline-flex min-h-11 items-center rounded-sm border border-white/20 px-4 text-sm hover:border-white/40"
         >
           Aujourd&apos;hui
         </Link>
       </div>
 
-      <h2 className="font-serif text-xl capitalize">{title}</h2>
+      <h2 className="font-serif text-lg capitalize sm:text-xl">{title}</h2>
 
-      <div className="flex gap-2">
+      <div className="grid grid-cols-3 gap-2 sm:flex">
         {(["day", "week", "month"] as const).map((item) => (
           <Link
             key={item}
             href={buildCalendarUrl(item, date)}
-            className={`rounded-sm px-3 py-1.5 text-sm capitalize ${
+            className={`inline-flex min-h-11 items-center justify-center rounded-sm px-3 text-sm capitalize sm:px-3 sm:py-1.5 ${
               view === item
                 ? "bg-[var(--color-foreground)] text-[var(--color-background)]"
                 : "border border-white/20 hover:border-white/40"
-            }`}
+            } ${item !== "day" ? "hidden sm:inline-flex" : ""}`}
           >
             {item === "day" ? "Jour" : item === "week" ? "Semaine" : "Mois"}
           </Link>
         ))}
+        <Link
+          href={buildCalendarUrl("week", date)}
+          className={`inline-flex min-h-11 items-center justify-center rounded-sm border border-white/20 px-3 text-sm sm:hidden ${
+            view === "week"
+              ? "bg-[var(--color-foreground)] text-[var(--color-background)]"
+              : "hover:border-white/40"
+          }`}
+        >
+          Sem.
+        </Link>
+        <Link
+          href={buildCalendarUrl("month", date)}
+          className={`inline-flex min-h-11 items-center justify-center rounded-sm border border-white/20 px-3 text-sm sm:hidden ${
+            view === "month"
+              ? "bg-[var(--color-foreground)] text-[var(--color-background)]"
+              : "hover:border-white/40"
+          }`}
+        >
+          Mois
+        </Link>
       </div>
     </div>
   );
@@ -241,8 +261,12 @@ function WeekView({
   const days = getWeekDays(getWeekStart(date));
 
   return (
-    <div className="overflow-x-auto rounded-sm border border-white/10 bg-[var(--color-surface)]">
-      <div className="min-w-[900px]">
+    <div>
+      <p className="mb-2 text-xs text-[var(--color-muted)] md:hidden">
+        Faites glisser horizontalement pour voir toute la semaine.
+      </p>
+      <div className="overflow-x-auto rounded-sm border border-white/10 bg-[var(--color-surface)]">
+        <div className="min-w-[720px] md:min-w-[900px]">
         <div className="grid grid-cols-[64px_repeat(7,1fr)] border-b border-white/10">
           <div />
           {days.map((day) => (
@@ -292,6 +316,7 @@ function WeekView({
             );
           })}
         </div>
+        </div>
       </div>
     </div>
   );
@@ -322,31 +347,38 @@ function MonthView({
           const dayAppointments = appointments.filter((item) => isSameDay(item.startTime, day));
 
           return (
-            <Link
+            <div
               key={formatDateKey(day)}
-              href={buildCalendarUrl("day", day)}
-              className={`min-h-24 border border-white/5 p-2 transition-colors hover:bg-white/5 ${
+              className={`min-h-20 border border-white/5 p-1.5 sm:min-h-24 sm:p-2 ${
                 inMonth ? "" : "opacity-40"
               }`}
             >
-              <p className="text-sm font-medium">{day.getDate()}</p>
-              <div className="mt-2 space-y-1">
-                {dayAppointments.slice(0, 3).map((appointment) => (
+              <Link
+                href={buildCalendarUrl("day", day)}
+                className="inline-flex min-h-8 min-w-8 items-center justify-center rounded-sm text-sm font-medium transition-colors hover:bg-white/5"
+              >
+                {day.getDate()}
+              </Link>
+              <div className="mt-1 space-y-1">
+                {dayAppointments.slice(0, 2).map((appointment) => (
                   <Link
                     key={appointment.id}
                     href={`/admin/appointments/${appointment.id}`}
-                    className={`block truncate rounded-sm border px-1 py-0.5 text-[10px] ${APPOINTMENT_STATUS_COLORS[appointment.status]}`}
+                    className={`block truncate rounded-sm border px-1 py-0.5 text-[10px] sm:text-[11px] ${APPOINTMENT_STATUS_COLORS[appointment.status]}`}
                   >
                     {appointment.client.name}
                   </Link>
                 ))}
-                {dayAppointments.length > 3 && (
-                  <p className="text-[10px] text-[var(--color-muted)]">
-                    +{dayAppointments.length - 3} RDV
-                  </p>
+                {dayAppointments.length > 2 && (
+                  <Link
+                    href={buildCalendarUrl("day", day)}
+                    className="block text-[10px] text-[var(--color-muted)] hover:text-[var(--color-foreground)]"
+                  >
+                    +{dayAppointments.length - 2} RDV
+                  </Link>
                 )}
               </div>
-            </Link>
+            </div>
           );
         })}
       </div>

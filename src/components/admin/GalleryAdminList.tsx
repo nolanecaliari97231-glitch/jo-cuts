@@ -48,7 +48,7 @@ export default function GalleryAdminList({ images }: { images: DbGalleryImage[] 
                     router.refresh();
                   });
                 }}
-                className="rounded-sm border border-white/20 px-3 py-1 text-xs disabled:opacity-40"
+                className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-sm border border-white/20 text-xs disabled:opacity-40 sm:px-3 sm:text-xs"
               >
                 ↑
               </button>
@@ -61,13 +61,13 @@ export default function GalleryAdminList({ images }: { images: DbGalleryImage[] 
                     router.refresh();
                   });
                 }}
-                className="rounded-sm border border-white/20 px-3 py-1 text-xs disabled:opacity-40"
+                className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-sm border border-white/20 text-xs disabled:opacity-40 sm:px-3 sm:text-xs"
               >
                 ↓
               </button>
               <Link
                 href={`/admin/gallery/${image.id}/edit`}
-                className="rounded-sm border border-white/20 px-3 py-1 text-xs hover:border-white/40"
+                className="inline-flex min-h-11 items-center rounded-sm border border-white/20 px-4 text-xs hover:border-white/40"
               >
                 Modifier
               </Link>
@@ -81,7 +81,7 @@ export default function GalleryAdminList({ images }: { images: DbGalleryImage[] 
                     router.refresh();
                   });
                 }}
-                className="rounded-sm border border-red-500/30 px-3 py-1 text-xs text-red-200 hover:border-red-500/50"
+                className="inline-flex min-h-11 items-center rounded-sm border border-red-500/30 px-4 text-xs text-red-200 hover:border-red-500/50"
               >
                 Supprimer
               </button>

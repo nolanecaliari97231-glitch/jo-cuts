@@ -11,7 +11,7 @@ export default function SocialLinks({ className }: SocialLinksProps) {
         href={salon.instagram.url}
         target="_blank"
         rel="noopener noreferrer"
-        className="inline-flex items-center gap-2 text-sm text-[var(--color-muted)] transition-colors hover:text-[var(--color-foreground)]"
+        className="inline-flex min-h-11 items-center gap-2 rounded-sm px-2 text-sm text-[var(--color-muted)] transition-colors hover:text-[var(--color-foreground)]"
       >
         <InstagramIcon />
         <span>{salon.instagram.handle}</span>
