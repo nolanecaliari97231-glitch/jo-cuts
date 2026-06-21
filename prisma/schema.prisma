@@ -1,0 +1,124 @@
+// JO'Cuts — Schéma de base de données (cf. JOCuts-specs.md §4)
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+enum AppointmentStatus {
+  pending
+  confirmed
+  refused
+  cancelled
+  completed
+}
+
+enum AppointmentLocation {
+  at_barber
+  at_home
+}
+
+model Staff {
+  id            String   @id @default(cuid())
+  name          String
+  email         String   @unique
+  passwordHash  String   @map("password_hash")
+  phone         String?
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  appointments  Appointment[]
+  availability  Availability[]
+  blockedSlots  BlockedSlot[]
+
+  @@map("staff")
+}
+
+model Service {
+  id              String   @id @default(cuid())
+  name            String
+  description     String?
+  durationMinutes Int      @map("duration_minutes")
+  price           Decimal
+  category        String
+  active          Boolean  @default(true)
+
+  appointments Appointment[]
+
+  @@map("services")
+}
+
+model Client {
+  id        String   @id @default(cuid())
+  name      String
+  phone     String
+  email     String?
+  notes     String?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  appointments Appointment[]
+
+  @@map("clients")
+}
+
+model Appointment {
+  id            String              @id @default(cuid())
+  clientId      String              @map("client_id")
+  staffId       String              @map("staff_id")
+  serviceId     String              @map("service_id")
+  startTime     DateTime            @map("start_time")
+  endTime       DateTime            @map("end_time")
+  status        AppointmentStatus   @default(pending)
+  locationMode  AppointmentLocation @default(at_barber) @map("location_mode")
+  commune       String?
+  paymentMethod String?             @map("payment_method")
+  travelSupplement Decimal?         @map("travel_supplement")
+  staffMessage  String?             @map("staff_message")
+  notes         String?
+  createdAt     DateTime            @default(now()) @map("created_at")
+
+  client  Client  @relation(fields: [clientId], references: [id])
+  staff   Staff   @relation(fields: [staffId], references: [id])
+  service Service @relation(fields: [serviceId], references: [id])
+
+  @@map("appointments")
+}
+
+model Availability {
+  id        String @id @default(cuid())
+  staffId   String @map("staff_id")
+  dayOfWeek Int    @map("day_of_week")
+  startTime String @map("start_time")
+  endTime   String @map("end_time")
+
+  staff Staff @relation(fields: [staffId], references: [id])
+
+  @@map("availability")
+}
+
+model BlockedSlot {
+  id            String   @id @default(cuid())
+  staffId       String   @map("staff_id")
+  startDatetime DateTime @map("start_datetime")
+  endDatetime   DateTime @map("end_datetime")
+  reason        String?
+
+  staff Staff @relation(fields: [staffId], references: [id])
+
+  @@map("blocked_slots")
+}
+
+model GalleryImage {
+  id        String   @id @default(cuid())
+  url       String
+  title     String
+  alt       String?
+  focus     String?  @default("50% 40%")
+  sortOrder Int      @default(0) @map("sort_order")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("gallery_images")
+}

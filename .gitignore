@@ -1,0 +1,33 @@
+node_modules
+.next
+out
+build
+
+# Env & secrets
+.env
+.env*.local
+
+# Uploads admin (photos galerie)
+public/uploads/gallery/*
+!public/uploads/gallery/.gitkeep
+
+# Prisma
+/generated/prisma
+dev.db
+dev.db-journal
+prisma/dev.db
+prisma/dev.db-journal
+
+# OS / IDE
+.DS_Store
+*.pem
+
+# Debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# TypeScript
+next-env.d.ts
+*.tsbuildinfo
