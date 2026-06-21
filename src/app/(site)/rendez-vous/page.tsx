@@ -8,6 +8,8 @@ export const metadata: Metadata = {
   title: "Prendre rendez-vous",
 };
 
+export const dynamic = "force-dynamic";
+
 export default async function RendezVousPage() {
   const services = await getBookableServices();
 

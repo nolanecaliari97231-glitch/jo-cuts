@@ -74,12 +74,6 @@ export const salon = {
   },
   paymentMethods: [
     {
-      id: "sumup",
-      label: "Paiement en ligne (SumUp)",
-      description: "Règlement sécurisé avant le rendez-vous — bientôt disponible sur le site.",
-      available: false,
-    },
-    {
       id: "cash",
       label: "Espèces sur place",
       description: "Paiement en espèces le jour du rendez-vous.",
@@ -87,8 +81,8 @@ export const salon = {
     },
     {
       id: "card",
-      label: "Carte bancaire sur place",
-      description: "Paiement par carte le jour du rendez-vous.",
+      label: "Carte bancaire sur place (SumUp)",
+      description: "Paiement par carte sur le terminal SumUp du barbier, le jour du rendez-vous.",
       available: true,
     },
   ] satisfies PaymentMethod[],
@@ -179,6 +173,6 @@ export const bookingSteps = [
   "Choisir un service et le lieu (chez le barbier ou à domicile)",
   "Sélectionner un créneau disponible",
   "Renseigner vos coordonnées — et votre commune si prestation à domicile",
-  "Choisir le paiement : en ligne (SumUp), espèces ou carte sur place",
+  "Choisir le paiement sur place : espèces ou carte (terminal SumUp)",
   "Validation — adresse ou supplément déplacement confirmé par le barbier",
 ] as const;

@@ -98,7 +98,8 @@ export default async function HomePage() {
           <div>
             <h2 className="font-serif text-3xl">Paiement</h2>
             <p className="mt-4 text-[var(--color-muted)]">
-              Espèces ou carte sur place. Paiement en ligne via SumUp bientôt disponible.
+              Règlement sur place le jour du rendez-vous — espèces ou carte via le terminal SumUp du
+              barbier.
             </p>
             <div className="mt-8">
               <PaymentInfo />

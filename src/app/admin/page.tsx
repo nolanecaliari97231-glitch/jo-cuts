@@ -118,8 +118,6 @@ export default async function AdminDashboardPage() {
       <div className="mt-10 rounded-sm border border-dashed border-white/20 p-6">
         <h2 className="font-serif text-xl">Prochaines fonctionnalités</h2>
         <ul className="mt-4 space-y-2 text-sm text-[var(--color-muted)]">
-          <li>• Paiement SumUp en ligne</li>
-          <li>• Déploiement Vercel + domaine</li>
           <li>• Espace client (V2)</li>
         </ul>
       </div>
