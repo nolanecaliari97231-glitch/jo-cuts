@@ -63,34 +63,34 @@ export default function BookingDateCalendar({
   }
 
   return (
-    <div className="mt-3 overflow-hidden rounded-sm border border-white/10 bg-[var(--color-surface)]">
-      <div className="flex items-center justify-between border-b border-white/10 px-3 py-3 sm:px-4">
+    <div className="mt-3 mx-auto max-w-sm overflow-hidden rounded-sm border border-white/10 bg-[var(--color-surface)]">
+      <div className="flex items-center justify-between border-b border-white/10 px-2 py-2 sm:px-3">
         <button
           type="button"
           onClick={() => shiftMonth(-1)}
           disabled={!canGoPrev}
           aria-label="Mois précédent"
-          className="inline-flex min-h-10 min-w-10 items-center justify-center rounded-sm border border-white/10 text-sm transition-colors hover:border-white/25 disabled:cursor-not-allowed disabled:opacity-30"
+          className="inline-flex h-8 w-8 items-center justify-center rounded-sm border border-white/10 text-xs transition-colors hover:border-white/25 disabled:cursor-not-allowed disabled:opacity-30"
         >
           ←
         </button>
-        <p className="font-serif text-base capitalize sm:text-lg">{monthLabel}</p>
+        <p className="font-serif text-sm capitalize">{monthLabel}</p>
         <button
           type="button"
           onClick={() => shiftMonth(1)}
           disabled={!canGoNext}
           aria-label="Mois suivant"
-          className="inline-flex min-h-10 min-w-10 items-center justify-center rounded-sm border border-white/10 text-sm transition-colors hover:border-white/25 disabled:cursor-not-allowed disabled:opacity-30"
+          className="inline-flex h-8 w-8 items-center justify-center rounded-sm border border-white/10 text-xs transition-colors hover:border-white/25 disabled:cursor-not-allowed disabled:opacity-30"
         >
           →
         </button>
       </div>
 
-      <div className="grid grid-cols-7 gap-px bg-white/5 px-2 py-2 sm:px-3">
+      <div className="grid grid-cols-7 gap-0.5 px-2 pb-2 sm:px-3">
         {WEEKDAY_LABELS.map((label) => (
           <div
             key={label}
-            className="py-2 text-center text-[10px] font-medium uppercase tracking-wider text-[var(--color-muted)] sm:text-xs"
+            className="py-1 text-center text-[9px] font-medium uppercase tracking-wider text-[var(--color-muted)]"
           >
             {label}
           </div>
@@ -116,7 +116,7 @@ export default function BookingDateCalendar({
               }}
               aria-label={formatLongDate(day)}
               aria-pressed={isSelected}
-              className={`relative flex aspect-square items-center justify-center rounded-sm text-sm transition-colors ${
+              className={`relative flex h-8 w-full items-center justify-center rounded-sm text-xs transition-colors ${
                 isSelected
                   ? "bg-[var(--color-foreground)] font-semibold text-[var(--color-background)]"
                   : isBookable
@@ -128,7 +128,7 @@ export default function BookingDateCalendar({
             >
               {day.getDate()}
               {isBookable && !isSelected && (
-                <span className="absolute bottom-1.5 h-1 w-1 rounded-full bg-emerald-400/80" />
+                <span className="absolute bottom-0.5 h-0.5 w-0.5 rounded-full bg-emerald-400/80" />
               )}
             </button>
           );
@@ -136,15 +136,15 @@ export default function BookingDateCalendar({
       </div>
 
       {selectedDate ? (
-        <div className="border-t border-white/10 px-4 py-3 text-sm text-[var(--color-muted)]">
+        <div className="border-t border-white/10 px-3 py-2 text-xs text-[var(--color-muted)]">
           Date choisie :{" "}
           <span className="font-medium text-[var(--color-foreground)]">
             {formatLongDate(parseDateKey(selectedDate))}
           </span>
         </div>
       ) : (
-        <div className="border-t border-white/10 px-4 py-3 text-sm text-[var(--color-muted)]">
-          Les jours avec un point vert sont disponibles.
+        <div className="border-t border-white/10 px-3 py-2 text-xs text-[var(--color-muted)]">
+          Point vert = jour disponible.
         </div>
       )}
     </div>

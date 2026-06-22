@@ -4,7 +4,7 @@ import type { AdminAppointment } from "@/lib/appointment-admin";
 export type ClientListItem = {
   id: string;
   name: string;
-  phone: string;
+  phone: string | null;
   email: string | null;
   notes: string | null;
   createdAt: Date;
@@ -16,7 +16,7 @@ export type ClientListItem = {
 export type ClientProfile = {
   id: string;
   name: string;
-  phone: string;
+  phone: string | null;
   email: string | null;
   notes: string | null;
   createdAt: Date;
@@ -39,7 +39,7 @@ export type DashboardTodayAppointment = {
   startTime: Date;
   endTime: Date;
   status: AdminAppointment["status"];
-  client: { id: string; name: string; phone: string };
+  client: { id: string; name: string; phone: string | null };
   service: { name: string };
 };
 

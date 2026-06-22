@@ -1,5 +1,6 @@
 import { formatEuro, sendEmail } from "@/lib/email";
-import { privateSalonLocation, salon } from "@/lib/salon";
+import { getSiteUrl } from "@/lib/client-auth";
+import { salon } from "@/lib/salon";
 import { formatLongDate, formatTime } from "@/lib/schedule";
 
 type AppointmentEmailContext = {
@@ -12,7 +13,7 @@ type AppointmentEmailContext = {
   travelSupplement: number | null;
   staffMessage: string | null;
   notes: string | null;
-  client: { name: string; phone: string; email: string | null };
+  client: { name: string; phone: string | null; email: string | null };
   service: { name: string; price: number; durationMinutes: number };
   staff: { name: string; email: string };
 };
@@ -66,66 +67,55 @@ export async function notifyStaffNewBooking(appointment: AppointmentEmailContext
 }
 
 export async function notifyClientBookingConfirmed(appointment: AppointmentEmailContext) {
-  if (!appointment.client.email) {
-    return { ok: true, skipped: true as const };
+  const accountUrl = `${getSiteUrl()}/compte/rendez-vous/${appointment.id}`;
+
+  if (appointment.client.email) {
+    await sendEmail({
+      to: appointment.client.email,
+      subject: `[JO'Cuts] Rendez-vous confirmé`,
+      html: `
+        <p>Bonjour ${appointment.client.name},</p>
+        <p>Votre rendez-vous chez ${salon.name} est <strong>confirmé</strong>.</p>
+        ${appointmentSummaryHtml(appointment)}
+        <p>Retrouvez l'adresse et les messages dans votre espace client :</p>
+        <p><a href="${accountUrl}">${accountUrl}</a></p>
+        <p>Contact barbier : ${salon.phone} — ${salon.email}</p>
+      `,
+      text: `Votre RDV JO'Cuts est confirmé. Détails : ${accountUrl}`,
+    });
   }
 
-  const locationDetails =
-    appointment.locationMode === "at_barber"
-      ? `<p><strong>Adresse :</strong> communiquée via Google Maps après validation.</p>
-         <p><a href="${privateSalonLocation.mapsLink}">Ouvrir l'itinéraire Google Maps</a></p>`
-      : `<p>Le barbier se déplace chez vous${appointment.commune ? ` (${appointment.commune})` : ""}.</p>`;
-
-  const staffBlock = appointment.staffMessage
-    ? `<p><strong>Message du barbier :</strong><br>${escapeHtml(appointment.staffMessage).replace(/\n/g, "<br>")}</p>`
-    : "";
-
-  return sendEmail({
-    to: appointment.client.email,
-    subject: `[JO'Cuts] Rendez-vous confirmé`,
-    html: `
-      <p>Bonjour ${appointment.client.name},</p>
-      <p>Votre rendez-vous chez ${salon.name} est <strong>confirmé</strong>.</p>
-      ${appointmentSummaryHtml(appointment)}
-      ${locationDetails}
-      ${staffBlock}
-      <p>Contact barbier : ${salon.phone} — ${salon.email}</p>
-    `,
-    text: `Votre RDV JO'Cuts est confirmé le ${formatLongDate(appointment.startTime)} à ${formatTime(appointment.startTime)}.`,
-  });
+  return { ok: true as const };
 }
 
 export async function notifyClientBookingRefused(
   appointment: AppointmentEmailContext,
   reason?: string,
 ) {
-  if (!appointment.client.email) {
-    return { ok: true, skipped: true as const };
-  }
-
+  const accountUrl = `${getSiteUrl()}/compte/rendez-vous/${appointment.id}`;
   const message = reason ?? appointment.staffMessage;
 
-  return sendEmail({
-    to: appointment.client.email,
-    subject: `[JO'Cuts] Demande de rendez-vous non disponible`,
-    html: `
-      <p>Bonjour ${appointment.client.name},</p>
-      <p>Votre demande de rendez-vous n'a pas pu être acceptée pour le créneau suivant :</p>
-      ${appointmentSummaryHtml(appointment)}
-      ${
-        message
-          ? `<p><strong>Message :</strong><br>${escapeHtml(message).replace(/\n/g, "<br>")}</p>`
-          : "<p>N'hésitez pas à choisir un autre créneau sur le site ou à contacter le barbier.</p>"
-      }
-      <p><a href="${getSiteUrl()}/rendez-vous">Prendre un nouveau rendez-vous</a></p>
-      <p>Contact : ${salon.phone} — ${salon.email}</p>
-    `,
-    text: `Votre demande RDV JO'Cuts n'a pas été acceptée.`,
-  });
-}
+  if (appointment.client.email) {
+    await sendEmail({
+      to: appointment.client.email,
+      subject: `[JO'Cuts] Demande de rendez-vous non disponible`,
+      html: `
+        <p>Bonjour ${appointment.client.name},</p>
+        <p>Votre demande de rendez-vous n'a pas pu être acceptée pour le créneau suivant :</p>
+        ${appointmentSummaryHtml(appointment)}
+        ${
+          message
+            ? `<p><strong>Message :</strong><br>${escapeHtml(message).replace(/\n/g, "<br>")}</p>`
+            : "<p>N'hésitez pas à choisir un autre créneau sur le site ou à contacter le barbier.</p>"
+        }
+        <p><a href="${accountUrl}">Voir le détail dans mon compte</a></p>
+        <p><a href="${getSiteUrl()}/rendez-vous">Prendre un nouveau rendez-vous</a></p>
+      `,
+      text: `Votre demande RDV JO'Cuts n'a pas été acceptée. ${accountUrl}`,
+    });
+  }
 
-function getSiteUrl(): string {
-  return process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+  return { ok: true as const };
 }
 
 function escapeHtml(value: string): string {

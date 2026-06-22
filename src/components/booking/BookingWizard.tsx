@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState, useTransition } from "react";
 import { submitBooking } from "@/app/(site)/rendez-vous/actions";
 import BookingDateCalendar from "@/components/booking/BookingDateCalendar";
+import BookingTimeSlots from "@/components/booking/BookingTimeSlots";
 import type { BookingServiceOption } from "@/lib/appointment-data";
 import { salon } from "@/lib/salon";
 import { formatLongDate, formatTimeDisplay } from "@/lib/schedule";
@@ -11,6 +12,11 @@ type LocationMode = "at_barber" | "at_home";
 
 type BookingWizardProps = {
   services: BookingServiceOption[];
+  profile: {
+    name: string;
+    email: string;
+    phone: string;
+  };
 };
 
 const STEPS = ["Service", "Lieu", "Créneau", "Coordonnées"] as const;
@@ -24,7 +30,7 @@ function formatDateLabel(dateKey: string): string {
   return formatLongDate(new Date(year, month - 1, day));
 }
 
-export default function BookingWizard({ services }: BookingWizardProps) {
+export default function BookingWizard({ services, profile }: BookingWizardProps) {
   const [step, setStep] = useState(0);
   const [serviceId, setServiceId] = useState("");
   const [locationMode, setLocationMode] = useState<LocationMode>("at_barber");
@@ -32,9 +38,8 @@ export default function BookingWizard({ services }: BookingWizardProps) {
   const [time, setTime] = useState("");
   const [bookableDates, setBookableDates] = useState<string[]>([]);
   const [slots, setSlots] = useState<string[]>([]);
-  const [clientName, setClientName] = useState("");
-  const [clientPhone, setClientPhone] = useState("");
-  const [clientEmail, setClientEmail] = useState("");
+  const [clientName, setClientName] = useState(profile.name);
+  const [clientPhone, setClientPhone] = useState(profile.phone);
   const [commune, setCommune] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("cash");
   const [notes, setNotes] = useState("");
@@ -132,7 +137,6 @@ export default function BookingWizard({ services }: BookingWizardProps) {
         paymentMethod,
         clientName,
         clientPhone,
-        clientEmail: clientEmail || undefined,
         notes: notes || undefined,
       });
 
@@ -284,22 +288,7 @@ export default function BookingWizard({ services }: BookingWizardProps) {
                   Aucun créneau disponible ce jour-là.
                 </p>
               ) : (
-                <div className="mt-3 grid grid-cols-3 gap-2 sm:flex sm:flex-wrap">
-                  {slots.map((slot) => (
-                    <button
-                      key={slot}
-                      type="button"
-                      onClick={() => setTime(slot)}
-                      className={`min-h-11 rounded-sm border px-3 py-2 text-sm ${
-                        time === slot
-                          ? "border-[var(--color-foreground)] bg-[var(--color-surface)]"
-                          : "border-white/10 hover:border-white/25"
-                      }`}
-                    >
-                      {formatTimeDisplay(slot)}
-                    </button>
-                  ))}
-                </div>
+                <BookingTimeSlots slots={slots} selectedTime={time} onSelect={setTime} />
               )}
             </div>
           )}
@@ -345,13 +334,11 @@ export default function BookingWizard({ services }: BookingWizardProps) {
                 placeholder="0696 00 00 00"
               />
             </Field>
-            <Field label="Email (optionnel)" className="md:col-span-2">
+            <Field label="Email (compte)" className="md:col-span-2">
               <input
-                value={clientEmail}
-                onChange={(event) => setClientEmail(event.target.value)}
-                type="email"
-                className={inputClassName}
-                placeholder="votre@email.com"
+                value={profile.email}
+                readOnly
+                className={`${inputClassName} cursor-not-allowed opacity-70`}
               />
             </Field>
             {locationMode === "at_home" && (
@@ -409,8 +396,8 @@ export default function BookingWizard({ services }: BookingWizardProps) {
           </Field>
 
           <p className="text-xs text-[var(--color-muted)]">
-            Votre demande sera envoyée en statut « en attente ». Le barbier vous confirmera ou
-            refusera le rendez-vous — vous recevrez une réponse prochainement.
+            Votre demande sera envoyée en statut « en attente ». Le barbier vous confirmera dans
+            votre espace compte — adresse et messages disponibles dès validation.
           </p>
 
           <WizardNav

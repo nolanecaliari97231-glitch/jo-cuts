@@ -33,7 +33,7 @@ export default function ClientDetailPanel({
       </div>
 
       <dl className="grid gap-4 rounded-sm border border-white/10 bg-[var(--color-surface)] p-6 text-sm sm:grid-cols-2 lg:grid-cols-4">
-        <DetailItem label="Téléphone" value={client.phone} />
+        <DetailItem label="Téléphone" value={client.phone ?? "Non renseigné"} />
         <DetailItem label="Email" value={client.email ?? "Non renseigné"} />
         <DetailItem label="Rendez-vous" value={String(client.appointmentCount)} />
         <DetailItem label="Terminés" value={String(client.completedCount)} />

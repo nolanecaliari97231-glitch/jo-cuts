@@ -51,11 +51,19 @@ model Service {
   @@map("services")
 }
 
+enum MessageSender {
+  staff
+  client
+  system
+}
+
 model Client {
   id        String   @id @default(cuid())
   name      String
-  phone     String
-  email     String?
+  phone     String?
+  email     String?  @unique
+  googleId  String?  @unique @map("google_id")
+  avatarUrl String?  @map("avatar_url")
   notes     String?
   createdAt DateTime @default(now()) @map("created_at")
 
@@ -83,8 +91,21 @@ model Appointment {
   client  Client  @relation(fields: [clientId], references: [id])
   staff   Staff   @relation(fields: [staffId], references: [id])
   service Service @relation(fields: [serviceId], references: [id])
+  messages AppointmentMessage[]
 
   @@map("appointments")
+}
+
+model AppointmentMessage {
+  id            String        @id @default(cuid())
+  appointmentId String        @map("appointment_id")
+  sender        MessageSender
+  body          String
+  createdAt     DateTime      @default(now()) @map("created_at")
+
+  appointment Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+
+  @@map("appointment_messages")
 }
 
 model Availability {

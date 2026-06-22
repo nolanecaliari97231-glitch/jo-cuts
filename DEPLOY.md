@@ -17,13 +17,24 @@ Guide pas à pas pour mettre le site en production.
 
 Sans Blob, les uploads galerie ne fonctionnent pas en production (filesystem éphémère).
 
-## 3. Resend (emails — optionnel)
+## 3. Google OAuth (compte client — requis pour réserver)
+
+1. [console.cloud.google.com](https://console.cloud.google.com) → APIs & Services → Credentials
+2. Créer un **OAuth 2.0 Client ID** (Web application)
+3. **Authorized redirect URIs** :
+   - `https://jo-cuts.vercel.app/api/auth/client/google/callback`
+   - `http://localhost:3000/api/auth/client/google/callback` (dev)
+4. Variables Vercel : `GOOGLE_CLIENT_ID` + `GOOGLE_CLIENT_SECRET`
+
+Sans Google OAuth, les clients ne peuvent pas se connecter ni réserver.
+
+## 4. Resend (emails — optionnel)
 
 1. [resend.com](https://resend.com) → API Keys
 2. Vérifier un domaine d'envoi ou utiliser `onboarding@resend.dev` pour tester
 3. `RESEND_API_KEY` + `EMAIL_FROM`
 
-## 4. Importer sur Vercel
+## 5. Importer sur Vercel
 
 1. [vercel.com/new](https://vercel.com/new) → Import **jo-cuts** depuis GitHub
 2. Framework : Next.js (détecté automatiquement)
@@ -37,6 +48,9 @@ Sans Blob, les uploads galerie ne fonctionnent pas en production (filesystem ép
 | `STAFF_PASSWORD` | Mot de passe initial |
 | `NEXT_PUBLIC_SITE_URL` | `https://votre-projet.vercel.app` |
 | `BLOB_READ_WRITE_TOKEN` | Token Vercel Blob |
+| `GOOGLE_CLIENT_ID` | OAuth Google client |
+| `GOOGLE_CLIENT_SECRET` | OAuth Google secret |
+| `TZ` | `America/Martinique` (fuseau horaire RDV) |
 | `RESEND_API_KEY` | (optionnel) |
 | `EMAIL_FROM` | (optionnel) |
 
@@ -44,7 +58,7 @@ Sans Blob, les uploads galerie ne fonctionnent pas en production (filesystem ép
 
 Le build exécute automatiquement `prisma migrate deploy` (voir `vercel.json`).
 
-## 5. Seed initial (première fois)
+## 6. Seed initial (première fois)
 
 Après le premier déploiement, initialiser les données depuis votre machine :
 
@@ -60,7 +74,7 @@ npm run db:seed
 
 Cela crée : compte barbier, services, horaires, galerie par défaut.
 
-## 6. Développement local
+## 7. Développement local
 
 ```bash
 docker compose up -d          # PostgreSQL local
@@ -71,7 +85,7 @@ npm run db:seed
 npm run dev
 ```
 
-## 7. Vérifications post-déploiement
+## 8. Vérifications post-déploiement
 
 - Site public : `/`, `/services`, `/galerie`, `/rendez-vous`
 - Admin : `/admin/login`

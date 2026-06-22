@@ -100,7 +100,7 @@ export default function AppointmentDetailPanel({
           }
         />
         <DetailItem label="Paiement prévu" value={paymentLabel(appointment.paymentMethod)} />
-        <DetailItem label="Téléphone" value={appointment.client.phone} />
+        <DetailItem label="Téléphone" value={appointment.client.phone ?? "Non renseigné"} />
         <DetailItem label="Email" value={appointment.client.email ?? "Non renseigné"} />
         {appointment.travelSupplement != null && (
           <DetailItem
@@ -120,7 +120,8 @@ export default function AppointmentDetailPanel({
         <div className="rounded-sm border border-white/10 bg-[var(--color-surface)] p-6 text-sm">
           <h3 className="font-medium">Adresse (chez le barbier)</h3>
           <p className="mt-2 text-[var(--color-muted)]">
-            Lien Google Maps communiqué au client lors de la confirmation.
+            Le client reçoit l&apos;adresse dans son espace Mon compte (message automatique) et par
+            email si Resend est configuré.
           </p>
           <a
             href={privateSalonLocation.mapsLink}

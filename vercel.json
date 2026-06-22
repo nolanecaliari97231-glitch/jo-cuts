@@ -1,5 +1,8 @@
 {
   "buildCommand": "prisma migrate deploy && prisma generate && next build",
   "framework": "nextjs",
-  "regions": ["cdg1"]
+  "regions": ["cdg1"],
+  "env": {
+    "TZ": "America/Martinique"
+  }
 }

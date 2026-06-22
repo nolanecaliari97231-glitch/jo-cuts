@@ -1,10 +1,15 @@
-import { prisma } from "@/lib/prisma";
+import {
+  buildConfirmationMessage,
+  buildRefusalMessage,
+  createSystemMessage,
+} from "@/lib/appointment-messages";
 import type { AppointmentEmailContext } from "@/lib/notifications";
 import {
   notifyClientBookingConfirmed,
   notifyClientBookingRefused,
   notifyStaffNewBooking,
 } from "@/lib/notifications";
+import { prisma } from "@/lib/prisma";
 
 export type AdminAppointment = {
   id: string;
@@ -18,7 +23,7 @@ export type AdminAppointment = {
   staffMessage: string | null;
   notes: string | null;
   createdAt: Date;
-  client: { id: string; name: string; phone: string; email: string | null };
+  client: { id: string; name: string; phone: string | null; email: string | null };
   service: { id: string; name: string; durationMinutes: number; price: number };
 };
 
@@ -84,7 +89,7 @@ function mapEmailContext(appointment: {
   travelSupplement: { toString(): string } | null;
   staffMessage: string | null;
   notes: string | null;
-  client: { name: string; phone: string; email: string | null };
+  client: { name: string; phone: string | null; email: string | null };
   service: { name: string; durationMinutes: number; price: { toString(): string } };
   staff: { name: string; email: string };
 }): AppointmentEmailContext {
@@ -208,6 +213,19 @@ export async function confirmAppointment(input: {
   });
 
   const emailContext = mapEmailContext(updated);
+  await createSystemMessage(
+    updated.id,
+    buildConfirmationMessage({
+      startTime: updated.startTime,
+      endTime: updated.endTime,
+      locationMode: updated.locationMode,
+      commune: updated.commune,
+      travelSupplement: updated.travelSupplement
+        ? Number.parseFloat(updated.travelSupplement.toString())
+        : null,
+      staffMessage: updated.staffMessage,
+    }),
+  );
   await notifyClientBookingConfirmed(emailContext);
 
   return { ok: true as const };
@@ -240,6 +258,10 @@ export async function refuseAppointment(input: {
     include: appointmentInclude,
   });
 
+  await createSystemMessage(
+    updated.id,
+    buildRefusalMessage(input.staffMessage ?? updated.staffMessage),
+  );
   await notifyClientBookingRefused(mapEmailContext(updated), input.staffMessage);
 
   return { ok: true as const };

@@ -26,7 +26,7 @@ export type DbCalendarAppointment = {
   locationMode: "at_barber" | "at_home";
   commune: string | null;
   notes: string | null;
-  client: { name: string; phone: string };
+  client: { name: string; phone: string | null };
   service: { name: string; durationMinutes: number };
 };
 

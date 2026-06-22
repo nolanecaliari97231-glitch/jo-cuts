@@ -32,6 +32,7 @@ export type BookingServiceOption = {
 };
 
 export type BookingInput = {
+  clientId: string;
   serviceId: string;
   date: string;
   time: string;
@@ -210,28 +211,20 @@ export async function createBookingRequest(input: BookingInput) {
   }
 
   const phone = normalizePhone(input.clientPhone);
-  const email = input.clientEmail?.trim() || null;
 
   const appointment = await prisma.$transaction(async (tx) => {
-    let client = await tx.client.findFirst({ where: { phone } });
-
-    if (client) {
-      client = await tx.client.update({
-        where: { id: client.id },
-        data: {
-          name: input.clientName.trim(),
-          email: email ?? client.email,
-        },
-      });
-    } else {
-      client = await tx.client.create({
-        data: {
-          name: input.clientName.trim(),
-          phone,
-          email,
-        },
-      });
+    const client = await tx.client.findUnique({ where: { id: input.clientId } });
+    if (!client) {
+      throw new Error("Compte client introuvable.");
     }
+
+    await tx.client.update({
+      where: { id: client.id },
+      data: {
+        name: input.clientName.trim(),
+        phone,
+      },
+    });
 
     const noteParts: string[] = [];
     if (input.notes?.trim()) noteParts.push(input.notes.trim());
