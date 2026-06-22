@@ -106,7 +106,7 @@ export const serviceCategories: ServiceCategory[] = [
         description:
           "Coupe soignée adaptée à votre style et à la forme de votre visage — dégradé, taper, burst fade et finitions sur cheveux courts.",
         duration: "30 min",
-        price: "20",
+        price: "15",
       },
     ],
   },
@@ -139,7 +139,7 @@ export const serviceCategories: ServiceCategory[] = [
         name: "Coupe + barbe",
         description: "Formule complète pour un look harmonieux de la tête aux contours.",
         duration: "40–45 min",
-        price: "25",
+        price: "20",
       },
     ],
   },

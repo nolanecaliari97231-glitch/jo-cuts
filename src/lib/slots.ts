@@ -1,6 +1,9 @@
 import {
   SLOT_INTERVAL_MINUTES,
   combineDateAndTime,
+  getSalonDayOfWeek,
+  getSalonTodayKey,
+  addDaysToDateKey,
   timeToMinutes,
   type AvailabilityWindow,
 } from "@/lib/schedule";
@@ -17,10 +20,10 @@ export function rangesOverlap(startA: Date, endA: Date, startB: Date, endB: Date
 }
 
 export function generateSlotStartsForDay(
-  date: Date,
+  dateKey: string,
   windows: AvailabilityWindow[],
 ): string[] {
-  const dayOfWeek = date.getDay();
+  const dayOfWeek = getSalonDayOfWeek(dateKey);
   const dayWindows = windows.filter((window) => window.dayOfWeek === dayOfWeek);
   const slots = new Set<string>();
 
@@ -44,7 +47,7 @@ function minutesToTimeString(totalMinutes: number): string {
 }
 
 export function filterAvailableSlots(
-  date: Date,
+  dateKey: string,
   slotStarts: string[],
   durationMinutes: number,
   busyPeriods: BusyPeriod[],
@@ -52,7 +55,7 @@ export function filterAvailableSlots(
   const now = new Date();
 
   return slotStarts.filter((slotStart) => {
-    const start = combineDateAndTime(date, slotStart);
+    const start = combineDateAndTime(dateKey, slotStart);
     const end = new Date(start.getTime() + durationMinutes * 60_000);
 
     if (start <= now) return false;
@@ -61,17 +64,14 @@ export function filterAvailableSlots(
   });
 }
 
-export function isDateBookable(date: Date, windows: AvailabilityWindow[]): boolean {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+export function isDateBookable(dateKey: string, windows: AvailabilityWindow[]): boolean {
+  const todayKey = getSalonTodayKey();
+  const maxKey = addDaysToDateKey(todayKey, BOOKING_HORIZON_DAYS);
 
-  const maxDate = new Date(today);
-  maxDate.setDate(maxDate.getDate() + BOOKING_HORIZON_DAYS);
+  if (dateKey < todayKey || dateKey > maxKey) return false;
 
-  if (date < today || date > maxDate) return false;
-
-  const dayWindows = windows.filter((window) => window.dayOfWeek === date.getDay());
-  return dayWindows.length > 0;
+  const dayOfWeek = getSalonDayOfWeek(dateKey);
+  return windows.some((window) => window.dayOfWeek === dayOfWeek);
 }
 
 export function normalizePhone(phone: string): string {

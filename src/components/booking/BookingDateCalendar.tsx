@@ -2,10 +2,11 @@
 
 import { useMemo, useState } from "react";
 import {
-  formatDateKey,
+  formatDateKeyInSalon,
   formatLongDate,
   getMonthGrid,
   getMonthStart,
+  getSalonTodayKey,
 } from "@/lib/schedule";
 
 const WEEKDAY_LABELS = ["Lu", "Ma", "Me", "Je", "Ve", "Sa", "Di"];
@@ -49,7 +50,7 @@ export default function BookingDateCalendar({
   });
 
   const grid = getMonthGrid(viewMonth);
-  const currentMonth = viewMonth.getMonth();
+  const viewMonthKey = formatDateKeyInSalon(viewMonth);
 
   const canGoPrev =
     bounds &&
@@ -97,11 +98,11 @@ export default function BookingDateCalendar({
         ))}
 
         {grid.map((day) => {
-          const dateKey = formatDateKey(day);
-          const inMonth = day.getMonth() === currentMonth;
+          const dateKey = formatDateKeyInSalon(day);
+          const inMonth = dateKey.slice(0, 7) === viewMonthKey.slice(0, 7);
           const isBookable = bookableSet.has(dateKey);
           const isSelected = selectedDate === dateKey;
-          const isToday = dateKey === formatDateKey(new Date());
+          const isToday = dateKey === getSalonTodayKey();
 
           return (
             <button
@@ -110,7 +111,7 @@ export default function BookingDateCalendar({
               disabled={!isBookable}
               onClick={() => {
                 onSelect(dateKey);
-                if (day.getMonth() !== currentMonth) {
+                if (dateKey.slice(0, 7) !== viewMonthKey.slice(0, 7)) {
                   setViewMonth(getMonthStart(day));
                 }
               }}

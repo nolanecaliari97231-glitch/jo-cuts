@@ -3,6 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import GoogleSignInButton from "@/components/client/GoogleSignInButton";
 import PageIntro from "@/components/PageIntro";
+import { isGoogleAuthConfigured } from "@/lib/env";
 import { getClientSession } from "@/lib/client-session";
 
 export const metadata: Metadata = {
@@ -24,6 +25,7 @@ export default async function ClientLoginPage({
   const session = await getClientSession();
   const params = await searchParams;
   const nextPath = params.next?.startsWith("/") ? params.next : "/compte";
+  const googleReady = isGoogleAuthConfigured();
 
   if (session) {
     redirect(nextPath);
@@ -45,8 +47,23 @@ export default async function ClientLoginPage({
           </div>
         )}
 
+        {!googleReady && (
+          <div className="mb-6 rounded-sm border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-100">
+            La connexion Google n&apos;est pas encore active sur le serveur. Ajoutez{" "}
+            <code className="text-amber-50">GOOGLE_CLIENT_ID</code> et{" "}
+            <code className="text-amber-50">GOOGLE_CLIENT_SECRET</code> dans les variables
+            Vercel, puis redeployez.
+          </div>
+        )}
+
         <div className="rounded-sm border border-white/10 bg-[var(--color-surface)] p-6">
-          <GoogleSignInButton nextPath={nextPath} />
+          {googleReady ? (
+            <GoogleSignInButton nextPath={nextPath} />
+          ) : (
+            <p className="text-sm text-[var(--color-muted)]">
+              Configuration Google OAuth requise pour activer le compte client.
+            </p>
+          )}
           <p className="mt-4 text-xs text-[var(--color-muted)]">
             Connexion requise avant de prendre rendez-vous. Vous retrouverez vos RDV, l&apos;adresse
             après validation et les messages du barbier ici.

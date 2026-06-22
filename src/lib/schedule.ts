@@ -1,6 +1,35 @@
 import type { OpeningHour } from "@/lib/salon";
 
-/** 0 = dimanche … 6 = samedi (convention JavaScript). */
+/** Martinique — UTC−4 toute l'année (pas de changement d'heure). */
+export const SALON_TIMEZONE = "America/Martinique";
+export const SALON_UTC_OFFSET = "-04:00";
+
+export function formatDateKeyInSalon(date: Date): string {
+  return date.toLocaleDateString("en-CA", { timeZone: SALON_TIMEZONE });
+}
+
+export function getSalonTodayKey(): string {
+  return formatDateKeyInSalon(new Date());
+}
+
+export function getSalonDayOfWeek(dateKey: string): number {
+  return new Date(`${dateKey}T12:00:00${SALON_UTC_OFFSET}`).getUTCDay();
+}
+
+export function addDaysToDateKey(dateKey: string, days: number): string {
+  const base = new Date(`${dateKey}T12:00:00${SALON_UTC_OFFSET}`);
+  base.setUTCDate(base.getUTCDate() + days);
+  return formatDateKeyInSalon(base);
+}
+
+export function salonDayStart(dateKey: string): Date {
+  return new Date(`${dateKey}T00:00:00${SALON_UTC_OFFSET}`);
+}
+
+export function salonDayEnd(dateKey: string): Date {
+  return salonDayStart(addDaysToDateKey(dateKey, 1));
+}
+
 export const WEEKDAYS = [
   { dayOfWeek: 1, label: "Lundi" },
   { dayOfWeek: 2, label: "Mardi" },
@@ -189,6 +218,7 @@ export function formatShortDate(date: Date): string {
     weekday: "short",
     day: "numeric",
     month: "short",
+    timeZone: SALON_TIMEZONE,
   });
 }
 
@@ -198,6 +228,7 @@ export function formatLongDate(date: Date): string {
     day: "numeric",
     month: "long",
     year: "numeric",
+    timeZone: SALON_TIMEZONE,
   });
 }
 
@@ -205,12 +236,12 @@ export function formatTime(date: Date): string {
   return date.toLocaleTimeString("fr-FR", {
     hour: "2-digit",
     minute: "2-digit",
+    timeZone: SALON_TIMEZONE,
   });
 }
 
-export function combineDateAndTime(date: Date, time: string): Date {
-  const [hours, minutes] = time.split(":").map((part) => Number.parseInt(part, 10));
-  return new Date(date.getFullYear(), date.getMonth(), date.getDate(), hours, minutes, 0, 0);
+export function combineDateAndTime(dateKey: string, time: string): Date {
+  return new Date(`${dateKey}T${time}:00${SALON_UTC_OFFSET}`);
 }
 
 export function getMonthStart(date: Date): Date {

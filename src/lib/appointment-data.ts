@@ -16,10 +16,12 @@ import {
 } from "@/lib/availability-data";
 import { sendNewBookingNotifications } from "@/lib/appointment-admin";
 import {
-  addDays,
+  addDaysToDateKey,
   combineDateAndTime,
   dayScheduleToWindows,
-  startOfDay,
+  getSalonTodayKey,
+  salonDayEnd,
+  salonDayStart,
 } from "@/lib/schedule";
 
 export type BookingServiceOption = {
@@ -101,20 +103,18 @@ export async function getAvailableSlots(serviceId: string, dateKey: string): Pro
   });
   if (!service) return [];
 
-  const [year, month, day] = dateKey.split("-").map(Number);
-  const date = new Date(year, month - 1, day);
   const staffId = await getDefaultStaffId();
   const schedules = await getWeeklySchedule(staffId);
   const windows = schedules.flatMap((schedule) => dayScheduleToWindows(schedule));
 
-  if (!isDateBookable(date, windows)) return [];
+  if (!isDateBookable(dateKey, windows)) return [];
 
-  const dayStart = startOfDay(date);
-  const dayEnd = addDays(dayStart, 1);
+  const dayStart = salonDayStart(dateKey);
+  const dayEnd = salonDayEnd(dateKey);
   const busyPeriods = await getBusyPeriods(staffId, dayStart, dayEnd);
-  const slotStarts = generateSlotStartsForDay(date, windows);
+  const slotStarts = generateSlotStartsForDay(dateKey, windows);
 
-  return filterAvailableSlots(date, slotStarts, service.durationMinutes, busyPeriods);
+  return filterAvailableSlots(dateKey, slotStarts, service.durationMinutes, busyPeriods);
 }
 
 export async function getBookableDates(serviceId: string, fromDateKey?: string): Promise<string[]> {
@@ -127,36 +127,28 @@ export async function getBookableDates(serviceId: string, fromDateKey?: string):
   const schedules = await getWeeklySchedule(staffId);
   const windows = schedules.flatMap((schedule) => dayScheduleToWindows(schedule));
 
-  const start =
-    fromDateKey && /^\d{4}-\d{2}-\d{2}$/.test(fromDateKey)
-      ? (() => {
-          const [year, month, day] = fromDateKey.split("-").map(Number);
-          return startOfDay(new Date(year, month - 1, day));
-        })()
-      : startOfDay(new Date());
+  const startKey =
+    fromDateKey && /^\d{4}-\d{2}-\d{2}$/.test(fromDateKey) ? fromDateKey : getSalonTodayKey();
 
   const dates: string[] = [];
 
   for (let offset = 0; offset <= BOOKING_HORIZON_DAYS; offset += 1) {
-    const date = addDays(start, offset);
-    if (!isDateBookable(date, windows)) continue;
+    const dateKey = addDaysToDateKey(startKey, offset);
+    if (!isDateBookable(dateKey, windows)) continue;
 
-    const dayStart = startOfDay(date);
-    const dayEnd = addDays(dayStart, 1);
+    const dayStart = salonDayStart(dateKey);
+    const dayEnd = salonDayEnd(dateKey);
     const busyPeriods = await getBusyPeriods(staffId, dayStart, dayEnd);
-    const slotStarts = generateSlotStartsForDay(date, windows);
+    const slotStarts = generateSlotStartsForDay(dateKey, windows);
     const available = filterAvailableSlots(
-      date,
+      dateKey,
       slotStarts,
       service.durationMinutes,
       busyPeriods,
     );
 
     if (available.length > 0) {
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, "0");
-      const dayNum = String(date.getDate()).padStart(2, "0");
-      dates.push(`${year}-${month}-${dayNum}`);
+      dates.push(dateKey);
     }
   }
 
@@ -192,9 +184,7 @@ export async function createBookingRequest(input: BookingInput) {
     return { error: "Mode de paiement invalide." };
   }
 
-  const [year, month, day] = input.date.split("-").map(Number);
-  const date = new Date(year, month - 1, day);
-  const startTime = combineDateAndTime(date, input.time);
+  const startTime = combineDateAndTime(input.date, input.time);
   const endTime = new Date(startTime.getTime() + service.durationMinutes * 60_000);
   const staffId = await getDefaultStaffId();
 
@@ -203,8 +193,8 @@ export async function createBookingRequest(input: BookingInput) {
     return { error: "Ce créneau n'est plus disponible. Choisissez un autre horaire." };
   }
 
-  const dayStart = startOfDay(date);
-  const dayEnd = addDays(dayStart, 1);
+  const dayStart = salonDayStart(input.date);
+  const dayEnd = salonDayEnd(input.date);
   const busyPeriods = await getBusyPeriods(staffId, dayStart, dayEnd);
   if (busyPeriods.some((period) => rangesOverlap(startTime, endTime, period.start, period.end))) {
     return { error: "Ce créneau vient d'être réservé. Choisissez un autre horaire." };
