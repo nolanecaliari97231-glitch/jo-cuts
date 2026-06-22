@@ -11,5 +11,8 @@ export async function GET(request: Request) {
   }
 
   const slots = await getAvailableSlots(serviceId, date);
-  return NextResponse.json({ slots });
+  return NextResponse.json(
+    { slots },
+    { headers: { "Cache-Control": "private, max-age=30, stale-while-revalidate=60" } },
+  );
 }

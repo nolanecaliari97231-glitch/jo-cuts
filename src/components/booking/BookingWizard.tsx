@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { submitBooking } from "@/app/(site)/rendez-vous/actions";
 import BookingDateCalendar from "@/components/booking/BookingDateCalendar";
+import { CalendarSkeleton, TimeSlotsSkeleton } from "@/components/booking/BookingLoadingSkeleton";
 import BookingTimeSlots from "@/components/booking/BookingTimeSlots";
 import type { BookingServiceOption } from "@/lib/appointment-data";
 import { salon } from "@/lib/salon";
@@ -47,6 +48,8 @@ export default function BookingWizard({ services, profile }: BookingWizardProps)
   const [isPending, startTransition] = useTransition();
   const [loadingDates, setLoadingDates] = useState(false);
   const [loadingSlots, setLoadingSlots] = useState(false);
+  const datesCacheRef = useRef<Map<string, string[]>>(new Map());
+  const slotsCacheRef = useRef<Map<string, string[]>>(new Map());
 
   const selectedService = useMemo(
     () => services.find((service) => service.id === serviceId),
@@ -55,6 +58,13 @@ export default function BookingWizard({ services, profile }: BookingWizardProps)
 
   useEffect(() => {
     if (!serviceId) return;
+
+    const cached = datesCacheRef.current.get(serviceId);
+    if (cached) {
+      setBookableDates(cached);
+      setLoadingDates(false);
+      return;
+    }
 
     let cancelled = false;
 
@@ -70,7 +80,10 @@ export default function BookingWizard({ services, profile }: BookingWizardProps)
     fetch(`/api/booking/dates?serviceId=${serviceId}`)
       .then((response) => response.json())
       .then((data: { dates?: string[] }) => {
-        if (!cancelled) setBookableDates(data.dates ?? []);
+        if (cancelled) return;
+        const dates = data.dates ?? [];
+        datesCacheRef.current.set(serviceId, dates);
+        setBookableDates(dates);
       })
       .catch(() => {
         if (!cancelled) setError("Impossible de charger les dates disponibles.");
@@ -87,6 +100,14 @@ export default function BookingWizard({ services, profile }: BookingWizardProps)
   useEffect(() => {
     if (!serviceId || !date) return;
 
+    const cacheKey = `${serviceId}:${date}`;
+    const cached = slotsCacheRef.current.get(cacheKey);
+    if (cached) {
+      setSlots(cached);
+      setLoadingSlots(false);
+      return;
+    }
+
     let cancelled = false;
 
     queueMicrotask(() => {
@@ -99,7 +120,10 @@ export default function BookingWizard({ services, profile }: BookingWizardProps)
     fetch(`/api/booking/slots?serviceId=${serviceId}&date=${date}`)
       .then((response) => response.json())
       .then((data: { slots?: string[] }) => {
-        if (!cancelled) setSlots(data.slots ?? []);
+        if (cancelled) return;
+        const nextSlots = data.slots ?? [];
+        slotsCacheRef.current.set(cacheKey, nextSlots);
+        setSlots(nextSlots);
       })
       .catch(() => {
         if (!cancelled) setError("Impossible de charger les créneaux.");
@@ -261,7 +285,7 @@ export default function BookingWizard({ services, profile }: BookingWizardProps)
               Date
             </h3>
             {loadingDates ? (
-              <p className="mt-3 text-sm text-[var(--color-muted)]">Chargement des dates…</p>
+              <CalendarSkeleton />
             ) : bookableDates.length === 0 ? (
               <p className="mt-3 text-sm text-[var(--color-muted)]">
                 Aucune date disponible pour cette prestation. Essayez un autre service.
@@ -282,7 +306,7 @@ export default function BookingWizard({ services, profile }: BookingWizardProps)
                 Heure
               </h3>
               {loadingSlots ? (
-                <p className="mt-3 text-sm text-[var(--color-muted)]">Chargement des horaires…</p>
+                <TimeSlotsSkeleton />
               ) : slots.length === 0 ? (
                 <p className="mt-3 text-sm text-[var(--color-muted)]">
                   Aucun créneau disponible ce jour-là.

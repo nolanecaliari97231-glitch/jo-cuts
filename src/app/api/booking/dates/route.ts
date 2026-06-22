@@ -10,5 +10,8 @@ export async function GET(request: Request) {
   }
 
   const dates = await getBookableDates(serviceId);
-  return NextResponse.json({ dates });
+  return NextResponse.json(
+    { dates },
+    { headers: { "Cache-Control": "private, max-age=60, stale-while-revalidate=120" } },
+  );
 }

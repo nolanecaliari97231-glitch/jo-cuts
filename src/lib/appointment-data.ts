@@ -73,18 +73,22 @@ export async function getBookableServices(): Promise<BookingServiceOption[]> {
   }, []);
 }
 
-async function getBusyPeriods(staffId: string, dayStart: Date, dayEnd: Date): Promise<BusyPeriod[]> {
+async function getBusyPeriodsForRange(
+  staffId: string,
+  rangeStart: Date,
+  rangeEnd: Date,
+): Promise<BusyPeriod[]> {
   const [appointments, blockedSlots] = await Promise.all([
     prisma.appointment.findMany({
       where: {
         staffId,
         status: { in: ["pending", "confirmed"] },
-        startTime: { lt: dayEnd },
-        endTime: { gt: dayStart },
+        startTime: { lt: rangeEnd },
+        endTime: { gt: rangeStart },
       },
       select: { startTime: true, endTime: true },
     }),
-    getBlockedSlotsForRange(staffId, dayStart, dayEnd),
+    getBlockedSlotsForRange(staffId, rangeStart, rangeEnd),
   ]);
 
   return [
@@ -93,17 +97,21 @@ async function getBusyPeriods(staffId: string, dayStart: Date, dayEnd: Date): Pr
   ];
 }
 
+function busyPeriodsForDay(allBusy: BusyPeriod[], dayStart: Date, dayEnd: Date): BusyPeriod[] {
+  return allBusy.filter((period) => period.start < dayEnd && period.end > dayStart);
+}
+
 export async function getAvailableSlots(serviceId: string, dateKey: string): Promise<string[]> {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(dateKey)) {
     return [];
   }
 
-  const service = await prisma.service.findFirst({
-    where: { id: serviceId, active: true },
-  });
+  const [service, staffId] = await Promise.all([
+    prisma.service.findFirst({ where: { id: serviceId, active: true } }),
+    getDefaultStaffId(),
+  ]);
   if (!service) return [];
 
-  const staffId = await getDefaultStaffId();
   const schedules = await getWeeklySchedule(staffId);
   const windows = schedules.flatMap((schedule) => dayScheduleToWindows(schedule));
 
@@ -111,24 +119,37 @@ export async function getAvailableSlots(serviceId: string, dateKey: string): Pro
 
   const dayStart = salonDayStart(dateKey);
   const dayEnd = salonDayEnd(dateKey);
-  const busyPeriods = await getBusyPeriods(staffId, dayStart, dayEnd);
+  const busyPeriods = await getBusyPeriodsForRange(staffId, dayStart, dayEnd);
   const slotStarts = generateSlotStartsForDay(dateKey, windows);
 
-  return filterAvailableSlots(dateKey, slotStarts, service.durationMinutes, busyPeriods);
+  return filterAvailableSlots(
+    dateKey,
+    slotStarts,
+    service.durationMinutes,
+    busyPeriods,
+    windows,
+  );
 }
 
 export async function getBookableDates(serviceId: string, fromDateKey?: string): Promise<string[]> {
-  const service = await prisma.service.findFirst({
-    where: { id: serviceId, active: true },
-  });
+  const [service, staffId] = await Promise.all([
+    prisma.service.findFirst({ where: { id: serviceId, active: true } }),
+    getDefaultStaffId(),
+  ]);
   if (!service) return [];
 
-  const staffId = await getDefaultStaffId();
   const schedules = await getWeeklySchedule(staffId);
   const windows = schedules.flatMap((schedule) => dayScheduleToWindows(schedule));
 
   const startKey =
     fromDateKey && /^\d{4}-\d{2}-\d{2}$/.test(fromDateKey) ? fromDateKey : getSalonTodayKey();
+
+  const horizonEndKey = addDaysToDateKey(startKey, BOOKING_HORIZON_DAYS);
+  const allBusy = await getBusyPeriodsForRange(
+    staffId,
+    salonDayStart(startKey),
+    salonDayEnd(horizonEndKey),
+  );
 
   const dates: string[] = [];
 
@@ -138,13 +159,13 @@ export async function getBookableDates(serviceId: string, fromDateKey?: string):
 
     const dayStart = salonDayStart(dateKey);
     const dayEnd = salonDayEnd(dateKey);
-    const busyPeriods = await getBusyPeriods(staffId, dayStart, dayEnd);
     const slotStarts = generateSlotStartsForDay(dateKey, windows);
     const available = filterAvailableSlots(
       dateKey,
       slotStarts,
       service.durationMinutes,
-      busyPeriods,
+      busyPeriodsForDay(allBusy, dayStart, dayEnd),
+      windows,
     );
 
     if (available.length > 0) {
@@ -195,7 +216,7 @@ export async function createBookingRequest(input: BookingInput) {
 
   const dayStart = salonDayStart(input.date);
   const dayEnd = salonDayEnd(input.date);
-  const busyPeriods = await getBusyPeriods(staffId, dayStart, dayEnd);
+  const busyPeriods = await getBusyPeriodsForRange(staffId, dayStart, dayEnd);
   if (busyPeriods.some((period) => rangesOverlap(startTime, endTime, period.start, period.end))) {
     return { error: "Ce créneau vient d'être réservé. Choisissez un autre horaire." };
   }
