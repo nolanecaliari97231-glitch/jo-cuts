@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const profile = await exchangeGoogleCode(code);
+    const profile = await exchangeGoogleCode(code, request.nextUrl.origin);
     const client = await upsertClientFromGoogle({
       googleId: profile.id,
       email: profile.email,

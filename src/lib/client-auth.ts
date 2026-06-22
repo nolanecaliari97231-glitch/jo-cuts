@@ -35,15 +35,34 @@ export async function verifyClientSessionToken(token: string): Promise<ClientSes
   return session;
 }
 
-export function getSiteUrl(): string {
-  return process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+/** URL publique du site — préfère l'origine réelle de la requête (évite les typos dans .env). */
+export function getSiteUrl(requestOrigin?: string): string {
+  if (requestOrigin) {
+    return requestOrigin.replace(/\/$/, "");
+  }
+
+  const configured = process.env.NEXT_PUBLIC_SITE_URL?.trim();
+  if (configured) {
+    try {
+      return new URL(configured).origin;
+    } catch {
+      // NEXT_PUBLIC_SITE_URL invalide (ex. apostrophe dans le hostname)
+    }
+  }
+
+  const vercelUrl = process.env.VERCEL_URL?.trim();
+  if (vercelUrl) {
+    return `https://${vercelUrl}`;
+  }
+
+  return "http://localhost:3000";
 }
 
-export function getGoogleRedirectUri(): string {
-  return `${getSiteUrl()}/api/auth/client/google/callback`;
+export function getGoogleRedirectUri(requestOrigin?: string): string {
+  return `${getSiteUrl(requestOrigin)}/api/auth/client/google/callback`;
 }
 
-export function getGoogleAuthUrl(state: string): string {
+export function getGoogleAuthUrl(state: string, requestOrigin?: string): string {
   const clientId = process.env.GOOGLE_CLIENT_ID;
   if (!clientId) {
     throw new Error("GOOGLE_CLIENT_ID manquant.");
@@ -51,7 +70,7 @@ export function getGoogleAuthUrl(state: string): string {
 
   const params = new URLSearchParams({
     client_id: clientId,
-    redirect_uri: getGoogleRedirectUri(),
+    redirect_uri: getGoogleRedirectUri(requestOrigin),
     response_type: "code",
     scope: "openid email profile",
     state,
@@ -69,7 +88,10 @@ export type GoogleUserInfo = {
   picture?: string;
 };
 
-export async function exchangeGoogleCode(code: string): Promise<GoogleUserInfo> {
+export async function exchangeGoogleCode(
+  code: string,
+  requestOrigin?: string,
+): Promise<GoogleUserInfo> {
   const clientId = process.env.GOOGLE_CLIENT_ID;
   const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
   if (!clientId || !clientSecret) {
@@ -83,7 +105,7 @@ export async function exchangeGoogleCode(code: string): Promise<GoogleUserInfo> 
       code,
       client_id: clientId,
       client_secret: clientSecret,
-      redirect_uri: getGoogleRedirectUri(),
+      redirect_uri: getGoogleRedirectUri(requestOrigin),
       grant_type: "authorization_code",
     }),
   });

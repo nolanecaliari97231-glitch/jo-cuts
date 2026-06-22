@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
 
   const state = randomBytes(16).toString("hex");
   const next = request.nextUrl.searchParams.get("next") ?? "/compte";
-  const authUrl = getGoogleAuthUrl(state);
+  const authUrl = getGoogleAuthUrl(state, request.nextUrl.origin);
 
   const response = NextResponse.redirect(authUrl);
   response.cookies.set(STATE_COOKIE, `${state}:${next}`, {
