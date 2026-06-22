@@ -50,7 +50,7 @@ Sans Google OAuth, les clients ne peuvent pas se connecter ni réserver.
 | `BLOB_READ_WRITE_TOKEN` | Token Vercel Blob |
 | `GOOGLE_CLIENT_ID` | OAuth Google client |
 | `GOOGLE_CLIENT_SECRET` | OAuth Google secret |
-| `TZ` | `America/Martinique` (fuseau horaire RDV) |
+| ~~`TZ`~~ | **Ne pas ajouter sur Vercel** (variable réservée). Le fuseau Martinique est géré dans le code (`schedule.ts`). |
 | `RESEND_API_KEY` | (optionnel) |
 | `EMAIL_FROM` | (optionnel) |
 
